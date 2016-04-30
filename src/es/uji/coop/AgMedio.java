@@ -1,9 +1,11 @@
 package es.uji.coop;
 
+import java.util.Iterator;
 import java.util.UUID;
 
 import es.uji.coop.mapa.Mapa;
 import es.uji.coop.mapa.Point;
+import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
@@ -13,19 +15,16 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 
 public class AgMedio extends Agent {
 
 	private static final long serialVersionUID = 1L;
 	private Point posicion;
 
-	public synchronized int getRadio() {
-		return radio;
-	}
-
-	private int radio;
 	private Mapa mapa;
-	private String id = UUID.randomUUID().toString();
+	private String idAg = UUID.randomUUID().toString();
+	public String GetIdAg() {return idAg;}
 	
 	private DFAgentDescription agInterfaz;
 	@SuppressWarnings("unused")
@@ -80,7 +79,7 @@ public class AgMedio extends Agent {
 				    //    para que me pase mis coordenadas
 				agInterfaz = result[0];
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-				msg.setContent(id);
+				msg.setContent(idAg);
 				msg.addReceiver(agInterfaz.getName());
 				myAgent.send(msg);
 				paso++;
@@ -93,7 +92,7 @@ public class AgMedio extends Agent {
 						cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
 				int y = Integer.parseInt(
 						cont.substring(cont.indexOf("y=")+2, cont.indexOf("radio=")));
-				radio = Integer.parseInt(cont.substring(cont.indexOf("radio=")+6));
+				double radio = Double.parseDouble(cont.substring(cont.indexOf("radio=")+6));
 				posicion = new Point(x, y, radio);
 				break;
 			case 4: // Busca el agente sensor
@@ -164,13 +163,44 @@ public class AgMedio extends Agent {
 	public class BPasoSimple extends CyclicBehaviour {
 
 		private static final long serialVersionUID = 1L;
+		final MessageTemplate mtRespVecinos = 
+				MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST), 
+						            MessageTemplate.MatchConversationId("vecinos"));  
 
 		@Override
 		public void action() {
 			// Avanza un paso
 			mapa.Avanza(posicion);
 			// Obtiene agentes vecinos en tu radio dada tu posicion actual
+			ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
+			msgVecinos.addReceiver(agSensor.getName());
+			msgVecinos.setConversationId("vecinos");
+			msgVecinos.setContent("x=" + posicion.getX() + "y=" + posicion.getY()
+			                          + "radio=" + posicion.getRadio());
+			send(msgVecinos);
+			ACLMessage msgResp = blockingReceive();
+			AID[] vecinos = null;
+			try {
+				vecinos = (AID[]) msgResp.getContentObject();
+			} catch (UnreadableException e) { e.printStackTrace(); }
+			if (vecinos != null) { // Si alguien me detecta pedir datos
+				Point posicionCalculada = PreguntaVecinos(vecinos);
+				// Comunica al agente log la posicion calculada
 
+			}
+		}
+
+		private Point PreguntaVecinos(AID[] vecinos) {
+			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+			for (AID aid : vecinos) {
+				msg.addReceiver(aid);
+			}
+			msg.setContent("x=" + posicion.getX() + "y=" + posicion.getY()
+			                          + "radio=" + posicion.getRadio());
+			send(msg);
+			Point[] puntos = new Point[vecinos.length];
+			
+			return null;
 		}
 
 	}

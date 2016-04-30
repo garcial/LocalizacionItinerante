@@ -42,9 +42,6 @@ public class AgSensor extends Agent {
 	
 	public class BDevolverDetectados extends CyclicBehaviour {
 
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 
 		@Override
@@ -56,13 +53,13 @@ public class AgSensor extends Agent {
 				int x_ = Integer.parseInt(
 						cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
 				int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2));
-				int radio = Integer.parseInt(cont.substring(cont.indexOf("radio=")+6));
+				double radio = Double.parseDouble(cont.substring(cont.indexOf("radio=")+6));
 				// Calcula vecinos
 				List<AID> vecinos = new ArrayList<AID>(); 
 				for(AID agente: agentes.keySet()){
 					Point p = agentes.get(agente);
 					double dist = Math.sqrt((p.getX()-x_)*(p.getX()-x_) + 
-			                (p.getY()-y_)*(p.getY()-y_));
+			                                (p.getY()-y_)*(p.getY()-y_));
 					if (dist <= radio && dist <= p.getRadio()) {
 						vecinos.add(agente);
 					}
@@ -82,9 +79,6 @@ public class AgSensor extends Agent {
 
 	public class BActualizar extends CyclicBehaviour {
 
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
 
 		@Override
