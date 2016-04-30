@@ -1,6 +1,5 @@
 package es.uji.coop;
 
-import java.util.Iterator;
 import java.util.UUID;
 
 import es.uji.coop.mapa.Mapa;
@@ -27,7 +26,6 @@ public class AgMedio extends Agent {
 	public String GetIdAg() {return idAg;}
 	
 	private DFAgentDescription agInterfaz;
-	@SuppressWarnings("unused")
 	private DFAgentDescription agSensor;
 
 	protected void setup() {
@@ -160,47 +158,90 @@ public class AgMedio extends Agent {
 
 	}
 	
-	public class BPasoSimple extends CyclicBehaviour {
+	public class BPasoSimple extends Behaviour {
 
 		private static final long serialVersionUID = 1L;
+		final MessageTemplate mtRespDist = MessageTemplate.and(
+				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+				MessageTemplate.MatchConversationId("distancia"));
 		final MessageTemplate mtRespVecinos = 
 				MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST), 
 						            MessageTemplate.MatchConversationId("vecinos"));  
+		int paso = 0;
+		AID[] vecinos = null;
+		Point[] puntos = null;
+		int totalRespuestas = 0;
 
 		@Override
 		public void action() {
-			// Avanza un paso
-			mapa.Avanza(posicion);
-			// Obtiene agentes vecinos en tu radio dada tu posicion actual
-			ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
-			msgVecinos.addReceiver(agSensor.getName());
-			msgVecinos.setConversationId("vecinos");
-			msgVecinos.setContent("x=" + posicion.getX() + "y=" + posicion.getY()
-			                          + "radio=" + posicion.getRadio());
-			send(msgVecinos);
-			ACLMessage msgResp = blockingReceive();
-			AID[] vecinos = null;
-			try {
-				vecinos = (AID[]) msgResp.getContentObject();
-			} catch (UnreadableException e) { e.printStackTrace(); }
-			if (vecinos != null) { // Si alguien me detecta pedir datos
-				Point posicionCalculada = PreguntaVecinos(vecinos);
-				// Comunica al agente log la posicion calculada
+			switch (paso) {
+			case 0:
+				// Avanza un paso
+				mapa.Avanza(posicion);
+				// Obtiene agentes vecinos en tu radio dada tu posicion actual
+				ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
+				msgVecinos.addReceiver(agSensor.getName());
+				msgVecinos.setConversationId("vecinos");
+				msgVecinos.setContent("x=" + posicion.getX() + "y=" + posicion.getY()
+				                          + "radio=" + posicion.getRadio());
+				send(msgVecinos);
+				paso++;
+				break;
+			case 1: 
+				ACLMessage msgResp = myAgent.receive(mtRespVecinos);
+				if (msgResp != null) {
+					try {
+						vecinos = (AID[]) msgResp.getContentObject();
+					} catch (UnreadableException e) { e.printStackTrace(); }
+					if (vecinos != null) {
+					    ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+					    for (AID aid : vecinos) {
+						    msg.addReceiver(aid);
+					    }
+					    msg.setContent("x=" + posicion.getX() + "y=" + posicion.getY()
+					                        + "radio=" + posicion.getRadio());
+					    send(msg);
+					    puntos = new Point[vecinos.length];
+					    paso++;
+					} else { paso = 3; }
+				} else block();
+			case 2: 
+				ACLMessage msg = myAgent.receive(mtRespDist);
+				if (msg != null) {
+					String cont = msg.getContent();
+					int x_ = Integer.parseInt(
+							cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
+					int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2));
+					int radio_ = Integer.parseInt(cont.substring(cont.indexOf("radio=")+6));
+					puntos[totalRespuestas] = new Point(x_, y_, radio_);
+					totalRespuestas++;
+					if (totalRespuestas == puntos.length) {
+						paso++;
+					}
+					break;
+				} else block();
 
+			case 3:
+				Point localizacionEstimada = PreguntaVecinos(puntos);
+				// Envía el mensaje con la localizacion estimada al agLog
+				paso++;
 			}
 		}
 
-		private Point PreguntaVecinos(AID[] vecinos) {
-			ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-			for (AID aid : vecinos) {
-				msg.addReceiver(aid);
-			}
-			msg.setContent("x=" + posicion.getX() + "y=" + posicion.getY()
-			                          + "radio=" + posicion.getRadio());
-			send(msg);
-			Point[] puntos = new Point[vecinos.length];
+		private Point PreguntaVecinos(Point[] puntos) {
+
+			puntos = new Point[vecinos.length];
 			
 			return null;
+		}
+
+		@Override
+		public boolean done() {
+			if (paso == 4) {
+				addBehaviour(new BPasoSimple());
+				return true;				
+			}
+			return false;
 		}
 
 	}
