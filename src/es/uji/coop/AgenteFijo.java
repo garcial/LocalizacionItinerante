@@ -76,7 +76,7 @@ public class AgenteFijo extends Agent {
 				    //    para que me pase mis coordenadas
 				agInterfaz = result[0];
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-				msg.setContent(id);
+				msg.setContent("fijo");
 				msg.addReceiver(agInterfaz.getName());
 				myAgent.send(msg);
 				paso++;

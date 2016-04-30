@@ -37,16 +37,16 @@ public class CanvasMundo extends JFrame {
 
 	}
 	
-	public void incluyeSensor(String agente, int x, int y, int radio) {
-		contentPane.incluyeSensor(agente, x, y, radio);
+	public void incluyeSensor(String agente, int x, int y, int radio, String tipo) {
+		contentPane.incluyeSensor(agente, x, y, radio, tipo);
 	}
 	
 	public void bajaSensor(String agente) {
 		contentPane.bajaSensor(agente);		
 	}
 	
-	public void mueveSensor(String agente, int x, int y) {
-		contentPane.mueveSensor(agente, x, y);
+	public void mueveSensor(String agente, int x, int y, double radio) {
+		contentPane.mueveSensor(agente, x, y, radio);
 	}
 
 	// pra cambiar el agente sensor que gestiona un agente movil
@@ -60,20 +60,12 @@ public class CanvasMundo extends JFrame {
 		private static final long serialVersionUID = 1L;
 		private ArrayList<Sensor> posicionesSensores;
 		private Image fondo;
-		private Image barquito;
 		private ImageIcon imagenMar = 
 				new ImageIcon(getClass().getResource("mar.jpg"));
-		private ImageIcon imagenBarco = 
-				new ImageIcon(getClass().getResource("Boat.png"));
-		int a = 5;
 		
 		
 		public PanelRadar() {
 			posicionesSensores = new ArrayList<Sensor>();
-			Image img = imagenBarco.getImage();
-			Image resizedImg = img.getScaledInstance(40, 50, java.awt.Image.SCALE_SMOOTH);
-			imagenBarco = new ImageIcon(resizedImg);
-			barquito = imagenBarco.getImage();
 			fondo = imagenMar.getImage();
 
 			this.setBorder(new EmptyBorder(1, 1, 1, 1));
@@ -90,16 +82,17 @@ public class CanvasMundo extends JFrame {
 		    repaint();		
 		}
 		
-		public void incluyeSensor(String agente, int x, int y, int radio){
-			posicionesSensores.add(new Sensor(agente, x, y, radio));
+		public void incluyeSensor(String agente, int x, int y, int radio, String tipo){
+			posicionesSensores.add(new Sensor(agente, x, y, radio, tipo));
 			repaint();
 		}
 		
-		public void mueveSensor(String agente, int x, int y) {
+		public void mueveSensor(String agente, int x, int y, double radio) {
 			for(Sensor s: posicionesSensores) 
 				if (agente.equals(s.getAgente())) {
 					s.setX(x);
 					s.setY(y);
+					s.setRadio(radio);
 					break;
 				}
 		    repaint();
@@ -141,15 +134,13 @@ public class CanvasMundo extends JFrame {
 			g.setFont(new Font("default", Font.BOLD, fplain.getSize()));
 			for (Sensor s : posicionesSensores) {
 				g.setColor(s.getColor());
-				// Tralada las coordenadas para que x,y
-			    //   queden en el centro de la imagen del barco
-				int trX = imagenBarco.getIconWidth()/2;
-				int trY = imagenBarco.getIconHeight()/2;
-				g.drawImage(barquito, s.getX() - trX, s.getY() - trY, 
-						trX*2, trY*2, null);
-				g.drawString(s.getAgente(), s.getX(), s.getY() + trY + 15);
+				// según sea el sensor dibuja un cuadrado, círculo o circunferencia
+				if (s.getTipo().equals("fijo")) g.fillRect(s.getX() -5, s.getY()-5, 10, 10);
+				else if (s.getTipo().equals("medio")) g.fillOval(s.getX(), s.getY(), 10, 10);
+				else g.drawOval(s.getX(), s.getY(), 10, 10);
+				g.drawString(s.getAgente(), s.getX()-5, s.getY()+15);
 				// Dibuja el circulo de influencia
-				int r = s.getRadio();							
+				int r = (int) Math.round(s.getRadio());							
 				g.drawOval(s.getX()-r, s.getY()-r, r*2, r*2);   
 			}
 			g.setFont(new Font("default", Font.PLAIN, fplain.getSize()));
@@ -160,8 +151,14 @@ public class CanvasMundo extends JFrame {
 	public static class Sensor {
 		int x;
 		int y;
-		int radio;
+		double radio;
 		Color color;
+		String tipo;
+		
+		public synchronized String getTipo() {
+			return tipo;
+		}
+
 		final static private Color[] colores = 
 			{Color.RED, Color.WHITE, Color.GREEN, Color.PINK, Color.CYAN, 
 			 Color.MAGENTA, Color.ORANGE, Color.YELLOW, Color.BLUE};
@@ -189,16 +186,20 @@ public class CanvasMundo extends JFrame {
 		public void setY(int y) {
 			this.y = y;
 		}
-		public int getRadio() {
+		public double getRadio() {
 			return radio;
 		}
+		public void setRadio(double radio){
+			this.radio = radio;
+		}
 
-		public Sensor(String agente, int x, int y, int radio) {
+		public Sensor(String agente, int x, int y, int radio, String tipo) {
 			super();
 			this.x = x;
 			this.y = y;
 			this.radio = radio;
 			this.agente = agente;
+			this.tipo = tipo;
 			this.color = colores[pos%colores.length];
 			pos++;
 		}

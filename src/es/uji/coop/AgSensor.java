@@ -91,9 +91,9 @@ public class AgSensor extends Agent {
 					int x_ = Integer.parseInt(
 							cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
 					int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2));
-					int radio = Integer.parseInt(cont.substring(cont.indexOf("radio=")+6));
+					double radio_ = Double.parseDouble(cont.substring(cont.indexOf("radio=")+6));
 					if (agentes.containsKey(aidInformador)) {
-						agentes.put(aidInformador, new Point(x_, y_, radio));
+						agentes.put(aidInformador, new Point(x_, y_, radio_));
 					} else {
 						System.out.println("ERROR:Agente: "+aidInformador.getName()+ " desconocido para actualizar posicion.");
 					}

@@ -77,7 +77,7 @@ public class AgMedio extends Agent {
 				    //    para que me pase mis coordenadas
 				agInterfaz = result[0];
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-				msg.setContent(idAg);
+				msg.setContent("medio");
 				msg.addReceiver(agInterfaz.getName());
 				myAgent.send(msg);
 				paso++;
@@ -178,6 +178,13 @@ public class AgMedio extends Agent {
 			case 0:
 				// Avanza un paso
 				mapa.Avanza(posicion);
+				// Comunica tu posicion al agSensor
+				ACLMessage msgPos = new ACLMessage(ACLMessage.INFORM);
+				msgPos.addReceiver(agSensor.getName());
+				msgPos.setContent("x="+posicion.getX() + "y=" + posicion.getY() +
+						       "radio=" + posicion.getRadio());
+				msgPos.setConversationId("posicionSensor");
+				send(msgPos);
 				// Obtiene agentes vecinos en tu radio dada tu posicion actual
 				ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
 				msgVecinos.addReceiver(agSensor.getName());
@@ -202,9 +209,10 @@ public class AgMedio extends Agent {
 					                        + "radio=" + posicion.getRadio());
 					    send(msg);
 					    puntos = new Point[vecinos.length];
-					    paso++;
+					    paso++; 
 					} else { paso = 3; }
 				} else block();
+				break;
 			case 2: 
 				ACLMessage msg = myAgent.receive(mtRespDist);
 				if (msg != null) {
@@ -218,21 +226,21 @@ public class AgMedio extends Agent {
 					if (totalRespuestas == puntos.length) {
 						paso++;
 					}
-					break;
 				} else block();
+				break;
 
 			case 3:
 				Point localizacionEstimada = PreguntaVecinos(puntos);
-				// Envía el mensaje con la localizacion estimada al agLog
+				// Envía el mensaje con la localizacion estimada al agLog y agInterfaz
+				
 				paso++;
+				break;
 			}
 		}
 
 		private Point PreguntaVecinos(Point[] puntos) {
-
-			puntos = new Point[vecinos.length];
-			
-			return null;
+			if (puntos == null) return null;
+			return new Point(puntos[0].getX(), puntos[0].getY(), puntos[0].getRadio());
 		}
 
 		@Override
