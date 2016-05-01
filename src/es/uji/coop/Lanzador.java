@@ -2,6 +2,8 @@ package es.uji.coop;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +12,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
 import javax.swing.JSlider;
 
 import jade.core.Profile;
@@ -172,8 +173,9 @@ public class Lanzador {
 	 *@param sniff : a ref to the sniffeur agent
 	 *@return the agentList
 	 */
-	private static List<AgentController> createAgents(HashMap<String, ContainerController> containerList) {
-		System.out.println("Launching agents...");
+	private static List<AgentController> createAgents(HashMap<String, ContainerController> containerList, 
+			                                          int nFijos, int nMedios, int nSencillos) {
+		System.out.println("Launching agents..." + nFijos + " Fijos; "+nMedios+" Medios; "+nSencillos+" Sencillos.");
 		ContainerController c;
 		String agentName;
 		List<AgentController> agentList=new ArrayList();
@@ -259,7 +261,7 @@ public class Lanzador {
 
 	private class GuiInicial extends JFrame {
 		
-		private JPanel contentPane;
+		//private JPanel contentPane;
 		JSlider sliderFijos;
 		JSlider sliderMedios;
 		JSlider sliderSencillos;
@@ -268,9 +270,9 @@ public class Lanzador {
 		public GuiInicial(){
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setTitle("Parámetros de ejecución: Localizacion compartida");
-//			setBounds(10, 10, MAXMUNDOX, MAXMUNDOY);
 			Container container = this.getContentPane();
 	        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
+//	        container.setBounds(10, 10, 400, 800);
 
 	        JLabel labelFijos = new JLabel("Número de sensores fijos");
 	        labelFijos.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -303,14 +305,22 @@ public class Lanzador {
 	        sliderSencillos.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(sliderSencillos);
 			botonLanzar = new JButton("Lanzar ejecución");
+			botonLanzar.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					rt = emptyPlatform(containerList);
+					agentList = createAgents(containerList, sliderFijos.getValue(), 
+							sliderMedios.getValue(), sliderSencillos.getValue());
+     				startAgents(agentList);
+				}
+			});
 	        botonLanzar.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(botonLanzar);
 	        this.pack();
 			// Muestra el frame
 			this.setVisible(true);
 		}
-		
-		
 		
 	}
 }
