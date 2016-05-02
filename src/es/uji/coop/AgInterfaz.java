@@ -141,7 +141,7 @@ public class AgInterfaz extends Agent {
 				final double radio = Double.parseDouble(cont.substring(
 						                 cont.indexOf("radio=") + 6));
 				final String agente = msg.getSender().getLocalName();
-				System.out.println("recibida nueva posicion de "+agente);
+				//System.out.println("recibida nueva posicion de "+agente);
 				SwingUtilities.invokeLater(new Runnable() {
 
 					@Override

@@ -131,7 +131,7 @@ public class AgActivo extends Agent {
 				agSensor = result[0];
 				// Y están identificados los agentes de la infraestructura. 
 				msg = new ACLMessage(ACLMessage.INFORM);
-				// Env�a datos de este nuevo sensor al AgSensor
+				// Envia datos de este nuevo sensor al AgSensor
 				msg.addReceiver(agSensor.getName());
 				msg.setConversationId("nuevoSensor");
 				msg.setContent("x="+posicion.getX()+"y="+posicion.getY()
@@ -193,7 +193,7 @@ public class AgActivo extends Agent {
 				        MessageTemplate.MatchConversationId("distancia"));
 		final MessageTemplate mtRespVecinos = 
 				MessageTemplate.and(
-						MessageTemplate.MatchPerformative(ACLMessage.REQUEST), 
+						MessageTemplate.MatchPerformative(ACLMessage.INFORM), 
 						MessageTemplate.MatchConversationId("vecinos"));  
 		int paso = 0;
 		AID[] vecinos = null;
@@ -219,7 +219,6 @@ public class AgActivo extends Agent {
 				msgPos.setContent("x="+posicion.getX() + "y=" + posicion.getY() +
 						          "radio=" + posicion.getRadio());
 				msgPos.setConversationId("posicionSensor");
-				System.out.println("envia nueva posicion de "+myAgent.getLocalName());
 				send(msgPos);
 				// Obtiene agentes vecinos en tu radio dada tu posicion actual
 				ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
@@ -262,7 +261,7 @@ public class AgActivo extends Agent {
 					int y_ = Integer.parseInt(
 							cont.substring(cont.indexOf("y=")+2, 
 									       cont.indexOf("dist=")));
-					int dist_ = Integer.parseInt(
+					double dist_ = Double.parseDouble(
 							             cont.substring(
 							               cont.indexOf("dist=")+5));
 					puntos[totalRespuestas] = new Point(x_, y_, dist_);
@@ -277,14 +276,13 @@ public class AgActivo extends Agent {
 				Point localizacionEstimada = PreguntaVecinos(puntos);
 				// Envia el mensaje con la localizacion estimada al 
 				//   agLog y agInterfaz
-				
 				paso++;
 				break;
 			}
 		}
 
 		private Point PreguntaVecinos(Point[] puntos) {
-			if (puntos == null) return null;
+			if (puntos == null) return new Point(0,0,0);
 			// Por ahora no hace nada decente con esa informacion
 			return puntos[0];
 		}

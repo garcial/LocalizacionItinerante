@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -88,6 +89,7 @@ public class CanvasMundo extends JFrame {
 			repaint();
 		}
 		
+		// Comprobada ok
 		public void mueveSensor(String agente, int x, int y, double radio) {
 			for(Sensor s: posicionesSensores) 
 				if (agente.equals(s.getAgente())) {
