@@ -1,7 +1,5 @@
 package es.uji.coop;
 
-import java.util.UUID;
-
 import es.uji.coop.mapa.Mapa;
 import es.uji.coop.mapa.Point;
 import jade.core.AID;
@@ -16,24 +14,36 @@ import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 import jade.lang.acl.UnreadableException;
 
-public class AgSimple extends Agent {
-
+public class AgActivo extends Agent {
 	private static final long serialVersionUID = 1L;
 	private Point posicion;
 
 	private Mapa mapa;
-	private String idAg = UUID.randomUUID().toString();
-	public String GetIdAg() {return idAg;}
+	private String tipoAgente;
 	
 	private DFAgentDescription agInterfaz;
 	private DFAgentDescription agSensor;
 
 	protected void setup() {
-		// Registra el servicio de "sensor Simple"
+		// Registra el servicio de sensor del tipo que sea:
+		//   fijo, medio, simple
+		Object[] args = getArguments();
+		if (args.length == 0) takeDown();
+		tipoAgente = (String) args[0];
+		System.out.println("Agente de tipo " + tipoAgente +
+		           " con nombre: " + getLocalName());
+		if (!(tipoAgente.equals("fijo") ||
+		      tipoAgente.equals("medio") ||
+		      tipoAgente.equals("simple"))) {
+			System.out.println("Error instanciando el agente "+
+		                       getLocalName() + "sensor que " +
+					          "no es fijo, medio o simple");
+			takeDown();
+		}
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
 		ServiceDescription sd = new ServiceDescription();
-		sd.setType("sensorSimple");
+		sd.setType(tipoAgente);
 		sd.setName(getLocalName());
 		dfd.addServices(sd);
 		try {
@@ -41,8 +51,9 @@ public class AgSimple extends Agent {
 		} catch (FIPAException fe) { fe.printStackTrace(); }
 		// Para saber desplazarse por el mundo
 		mapa = new Mapa();
-		// Incorpora un comportamiento para realizar las conexiones e identificar a los 
-		//    agentes de la infraestructura: AgInterfaz, AgLog, AgSensor
+		// Incorpora un comportamiento para realizar las conexiones  
+		//    e identificar a los agentes de la infraestructura: 
+		//    AgInterfaz, AgLog, AgSensor
 		addBehaviour(new BConexionInfraestructura());
 	}
 	
@@ -77,7 +88,8 @@ public class AgSimple extends Agent {
 				    //    para que me pase mis coordenadas
 				agInterfaz = result[0];
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-				msg.setContent("simple");
+				msg.setContent(tipoAgente);
+				msg.setConversationId("alta");
 				msg.addReceiver(agInterfaz.getName());
 				myAgent.send(msg);
 				paso++;
@@ -89,8 +101,10 @@ public class AgSimple extends Agent {
 				int x = Integer.parseInt(
 						cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
 				int y = Integer.parseInt(
-						cont.substring(cont.indexOf("y=")+2, cont.indexOf("radio=")));
-				double radio = Double.parseDouble(cont.substring(cont.indexOf("radio=")+6));
+						cont.substring(cont.indexOf("y=")+2, 
+								       cont.indexOf("radio=")));
+				double radio = Double.parseDouble(cont.substring(
+						                          cont.indexOf("radio=")+6));
 				posicion = new Point(x, y, radio);
 				break;
 			case 4: // Busca el agente sensor
@@ -112,10 +126,17 @@ public class AgSimple extends Agent {
 			case 6: // Ya hay un sensor activo
 				agSensor = result[0];
 				// Y están identificados los agentes de la infraestructura. 
+				msg = new ACLMessage(ACLMessage.INFORM);
+				// Env�a datos de este nuevo sensor al AgSensor
+				msg.addReceiver(agSensor.getName());
+				msg.setConversationId("nuevoSensor");
+				msg.setContent("x="+posicion.getX()+"y="+posicion.getY()
+				              +"radio="+posicion.getRadio());
+				send(msg);
 				// Ahora ya toca comenzar a escucha las peticiones de ayuda y a 
 				//    desplazarme por el escenario.
 				addBehaviour(new BAtenderPeticiones());
-				addBehaviour(new BPasoSimple());
+				if (!tipoAgente.equals("fijo"))	addBehaviour(new BPasoSimple());
 				paso++;
 				break;
 			}
@@ -165,8 +186,9 @@ public class AgSimple extends Agent {
 				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
 				MessageTemplate.MatchConversationId("distancia"));
 		final MessageTemplate mtRespVecinos = 
-				MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST), 
-						            MessageTemplate.MatchConversationId("vecinos"));  
+				MessageTemplate.and(
+						MessageTemplate.MatchPerformative(ACLMessage.REQUEST), 
+						MessageTemplate.MatchConversationId("vecinos"));  
 		int paso = 0;
 		AID[] vecinos = null;
 		Point[] puntos = null;
@@ -182,15 +204,16 @@ public class AgSimple extends Agent {
 				ACLMessage msgPos = new ACLMessage(ACLMessage.INFORM);
 				msgPos.addReceiver(agSensor.getName());
 				msgPos.setContent("x="+posicion.getX() + "y=" + posicion.getY() +
-						       "radio=" + posicion.getRadio());
+						          "radio=" + posicion.getRadio());
 				msgPos.setConversationId("posicionSensor");
 				send(msgPos);
 				// Obtiene agentes vecinos en tu radio dada tu posicion actual
 				ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
 				msgVecinos.addReceiver(agSensor.getName());
 				msgVecinos.setConversationId("vecinos");
-				msgVecinos.setContent("x=" + posicion.getX() + "y=" + posicion.getY()
-				                          + "radio=" + posicion.getRadio());
+				msgVecinos.setContent("x=" + posicion.getX() + "y=" + 
+				                      posicion.getY() + "radio=" + 
+						              posicion.getRadio());
 				send(msgVecinos);
 				paso++;
 				break;
@@ -205,8 +228,9 @@ public class AgSimple extends Agent {
 					    for (AID aid : vecinos) {
 						    msg.addReceiver(aid);
 					    }
-					    msg.setContent("x=" + posicion.getX() + "y=" + posicion.getY()
-					                        + "radio=" + posicion.getRadio());
+					    msg.setContent("x=" + posicion.getX() + "y=" + 
+					                   posicion.getY() + "radio=" + 
+					    		       posicion.getRadio());
 					    send(msg);
 					    puntos = new Point[vecinos.length];
 					    paso++; 
@@ -218,9 +242,14 @@ public class AgSimple extends Agent {
 				if (msg != null) {
 					String cont = msg.getContent();
 					int x_ = Integer.parseInt(
-							cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-					int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2));
-					int radio_ = Integer.parseInt(cont.substring(cont.indexOf("radio=")+6));
+							cont.substring(cont.indexOf("x=")+2, 
+									       cont.indexOf("y=")));
+					int y_ = Integer.parseInt(
+							cont.substring(cont.indexOf("y=")+2, 
+									       cont.indexOf("radio=")));
+					int radio_ = Integer.parseInt(
+							             cont.substring(
+							            	cont.indexOf("radio=")+6));
 					puntos[totalRespuestas] = new Point(x_, y_, radio_);
 					totalRespuestas++;
 					if (totalRespuestas == puntos.length) {
@@ -231,7 +260,8 @@ public class AgSimple extends Agent {
 
 			case 3:
 				Point localizacionEstimada = PreguntaVecinos(puntos);
-				// Envía el mensaje con la localizacion estimada al agLog y agInterfaz
+				// Envia el mensaje con la localizacion estimada al 
+				//   agLog y agInterfaz
 				
 				paso++;
 				break;
@@ -240,7 +270,9 @@ public class AgSimple extends Agent {
 
 		private Point PreguntaVecinos(Point[] puntos) {
 			if (puntos == null) return null;
-			return new Point(puntos[0].getX(), puntos[0].getY(), puntos[0].getRadio());
+			return new Point(puntos[0].getX(), 
+					         puntos[0].getY(), 
+					         puntos[0].getRadio());
 		}
 
 		@Override

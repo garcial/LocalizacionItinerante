@@ -44,20 +44,22 @@ public class AgInterfaz extends Agent {
 
 			@Override
 			public void run() {
-				canvas = new CanvasMundo(getLocalName(), MAXMUNDOX, MAXMUNDOY);	
+				canvas = new CanvasMundo(
+						getLocalName(), MAXMUNDOX, MAXMUNDOY);	
 			}			
 		});
 		// Gestiona datos de nuevo sensor en el escenario.
 		addBehaviour(new BIncorporaSensor());
 		// Dar de baja a sensores.
 		addBehaviour(new BBajaSensor());
-		// Actualizar las posiciones de los sensores en el escenario
+		// Actualizar posiciones de los sensores en el escenario
 		addBehaviour(new BEscuchaSensores());
 	}
 	
 	/*
-	 * Un nuevo sensor le indica al Interfaz que le indique en que coordenadas
-	 *   va a estar ubicado inicialmente y cual es su radio de sensorizaci�n.
+	 * Un nuevo sensor le indica al Interfaz que le indique en 
+	 *   que coordenadas va a estar ubicado inicialmente y cual 
+	 *   es su radio de sensorizacion.
 	 */
 	private class BIncorporaSensor extends CyclicBehaviour {
 
@@ -131,9 +133,13 @@ public class AgInterfaz extends Agent {
 				               //    o del movil
 				String cont = msg.getContent();
 				final int x = Integer.parseInt(
-						  cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-				final int y = Integer.parseInt(cont.substring(cont.indexOf("y=")+2));
-				final double radio = Double.parseDouble(cont.substring(cont.indexOf("radio=") + 6));
+						  cont.substring(cont.indexOf("x=")+2, 
+								         cont.indexOf("y=")));
+				final int y = Integer.parseInt(cont.substring(
+						                 cont.indexOf("y=")+2),
+						                 cont.indexOf("radio="));
+				final double radio = Double.parseDouble(cont.substring(
+						                 cont.indexOf("radio=") + 6));
 				final String agente = msg.getSender().getLocalName();
 				SwingUtilities.invokeLater(new Runnable() {
 

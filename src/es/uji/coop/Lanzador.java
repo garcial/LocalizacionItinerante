@@ -27,11 +27,15 @@ import jade.wrapper.StaleProxyException;
 /**
  * 
  * @author luisamable
- *  Esta es la clase Lanzador que permite ejecutar la plataforma Jade directamente desde código
- *  Se basa en el código ejemplo propuesto por Cedric Herpson y que se puede encontrar en la 
- *  siguiente dirección web: 
- *  http://herpsonc.eu/docs/README_HowToStartJadeFromSourceCode.pdf  Notas (muy breves)
- *  http://herpsonc.eu/docs/ y seleccionar el fichero: HowToStartJadeFromSourceCode
+ *  Esta es la clase Lanzador que permite ejecutar la plataforma 
+ *  Jade directamente desde código
+ *  Se basa en el código ejemplo propuesto por Cedric Herpson 
+ *  y que se puede encontrar en la siguiente dirección web:  
+ *  Notas (muy breves)
+ *  http://herpsonc.eu/docs/README_HowToStartJadeFromSourceCode.pdf 
+ *  Codigo fuente
+ *  http://herpsonc.eu/docs/ y seleccionar el fichero: 
+ *  HowToStartJadeFromSourceCode
  */
 public class Lanzador {
 
@@ -41,7 +45,7 @@ public class Lanzador {
 	private static ContainerController mainContainer;
 	
 	public static void main(String[] args) {
-		// Crea el Gui para introducir los parámetros de la ejecución
+		// Crea el Gui para introducir los parametros de la ejecucion
 		new Lanzador().new GuiInicial();
 	}
 
@@ -63,8 +67,10 @@ public class Lanzador {
 		// 1) create a platform (main container+DF+AMS)
 		Profile pMain = new ProfileImpl(hostname, 8888, null);
 		System.out.println("Launching a main-container..."+pMain);
-		mainContainer = rt.createMainContainer(pMain); //DF and AMS are include
-		// Si se ha seleccionado lanzar la ejecución de RMA se recibe un boolean indicándolo: RMA
+		//DF and AMS are included
+		mainContainer = rt.createMainContainer(pMain); 
+		// Si se ha seleccionado lanzar la ejecucion de RMA 
+		//    se recibe un boolean indicandolo: RMA
 		if (RMA) createRMA();
 
 		System.out.println("Plaform ok");
@@ -73,7 +79,8 @@ public class Lanzador {
 	}
 
 	/**
-	 * Crea el agente RMA para monitorización/activación en ejecución de agentes en la plataforma
+	 * Crea el agente RMA para monitorización/activación en 
+	 * ejecucion de agentes en la plataforma
 	 */
 
 	private static void createRMA() {
@@ -81,7 +88,8 @@ public class Lanzador {
 		AgentController rma;
 
 		try {
-			rma = mainContainer.createNewAgent("rma", "jade.tools.rma.rma", new Object[0]);
+			rma = mainContainer.createNewAgent(
+					               "rma", "jade.tools.rma.rma", new Object[0]);
 			rma.start();
 		} catch (StaleProxyException e) {
 			e.printStackTrace();
@@ -97,18 +105,24 @@ public class Lanzador {
 	 * 
 	 **********************************************/
 
-	private static List<AgentController> createAgents(int nFijos, int nMedios, int nSimples) {
-		System.out.println("Launching agents..." + nFijos + " Fijos; "+nMedios+" Medios; "+nSimples+" Sencillos.");
+	private static List<AgentController> createAgents(
+			                               int nFijos, int nMedios, int nSimples) {
+		System.out.println("Launching agents..." + nFijos + " Fijos; " + nMedios + 
+				           " Medios; "+nSimples+" Sencillos.");
 		String agentName;
 		List<AgentController> agentList=new ArrayList();
 		
 		// Primero los agentes de la infraestructura
 		
 	    try {
-		    AgentController	ag=mainContainer.createNewAgent("Agente Escenario",AgInterfaz.class.getName(),null);
+		    AgentController	ag=mainContainer.createNewAgent("Agente Escenario",
+		    		                                     AgInterfaz.class.getName(),
+		    		                                     null);
 		    agentList.add(ag);
 		    System.out.println("Agente Interfaz Escenario launched");
-		    ag=mainContainer.createNewAgent("Agente Sensor",AgSensor.class.getName(),null);
+		    ag=mainContainer.createNewAgent("Agente Sensor", 
+		    		                        AgSensor.class.getName(),
+		    		                        null);
 		    agentList.add(ag);
 		    System.out.println("Agente Sensor launched");
 	    } catch (StaleProxyException e) { e.printStackTrace(); }
@@ -117,9 +131,11 @@ public class Lanzador {
 
 		for(int i = 1; i<= nFijos; i++) {
 			agentName="F"+i;		
+			Object[] args = new Object[] {"fijo"};
 		    try {
-		    	// El 3 parámetro que aquí está null es un Object[] para pasarle argumentos al agente
-			    AgentController	ag=mainContainer.createNewAgent(agentName,AgenteFijo.class.getName(),null);
+			    AgentController	ag=mainContainer.createNewAgent(agentName, 
+			    		                                  AgActivo.class.getName(),
+			    		                                  args);
 			    agentList.add(ag);
 			    System.out.println(agentName+" launched");
 		    } catch (StaleProxyException e) { e.printStackTrace(); }
@@ -128,9 +144,12 @@ public class Lanzador {
 		//Ahora los agentes medios
 
 		for(int i = 1; i<= nMedios; i++) {
-			agentName="M"+i;		
+			agentName="M"+i;	
+			Object[] args = new Object[] {"medio"};
 		    try {
-			    AgentController	ag=mainContainer.createNewAgent(agentName,AgMedio.class.getName(),null);
+			    AgentController	ag=mainContainer.createNewAgent(agentName,
+			    		                                  AgActivo.class.getName(),
+			    		                                  args);
 			    agentList.add(ag);
 			    System.out.println(agentName+" launched");
 		    } catch (StaleProxyException e) { e.printStackTrace(); }
@@ -140,8 +159,11 @@ public class Lanzador {
 
 		for(int i = 1; i<= nSimples; i++) {
 			agentName="S"+i;		
+			Object[] args = new Object[] {"simple"};
 		    try {
-			    AgentController	ag = mainContainer.createNewAgent(agentName,AgSimple.class.getName(),null);
+			    AgentController	ag = mainContainer.createNewAgent(agentName, 
+			    		                                    AgActivo.class.getName(),
+			    		                                    args);
 			    agentList.add(ag);
 			    System.out.println(agentName+" launched");
 		    } catch (StaleProxyException e) { e.printStackTrace(); }

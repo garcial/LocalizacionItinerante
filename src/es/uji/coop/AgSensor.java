@@ -52,8 +52,10 @@ public class AgSensor extends Agent {
 				// Recuperar datos del contenido del mensaje
 				int x_ = Integer.parseInt(
 						cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-				int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2));
-				double radio = Double.parseDouble(cont.substring(cont.indexOf("radio=")+6));
+				int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2),
+						                                 cont.indexOf("radio="));
+				double radio = Double.parseDouble(cont.substring(
+						                          cont.indexOf("radio=")+6));
 				// Calcula vecinos
 				List<AID> vecinos = new ArrayList<AID>(); 
 				for(AID agente: agentes.keySet()){
@@ -88,31 +90,44 @@ public class AgSensor extends Agent {
 				if (msg.getConversationId().equals("posicionSensor")) {
 					String cont = msg.getContent();
 					AID aidInformador = msg.getSender();
-					int x_ = Integer.parseInt(
-							cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-					int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2));
-					double radio_ = Double.parseDouble(cont.substring(cont.indexOf("radio=")+6));
+					int x_ = Integer.parseInt(cont.substring(
+							     cont.indexOf("x=")+2, cont.indexOf("y=")));
+					int y_ = Integer.parseInt(cont.substring(
+							                  cont.indexOf("y=")+2),
+							                  cont.indexOf("radio"));
+					double radio_ = Double.parseDouble(cont.substring(
+							                     cont.indexOf("radio=")+6));
 					if (agentes.containsKey(aidInformador)) {
 						agentes.put(aidInformador, new Point(x_, y_, radio_));
 					} else {
-						System.out.println("ERROR:Agente: "+aidInformador.getName()+ " desconocido para actualizar posicion.");
+						System.out.println("ERROR:Agente: " + 
+					                    aidInformador.getName() + 
+					                    " desconocido para actualizar posicion.");
 					}
 				} else if (msg.getConversationId().equals("nuevoSensor")) {
 					String cont = msg.getContent();
 					AID aidInformador = msg.getSender();
 					int x_ = Integer.parseInt(
-							cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-					int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2));
-					int radio = Integer.parseInt(cont.substring(cont.indexOf("radio=")+6));
+							cont.substring(cont.indexOf("x=")+2, 
+									       cont.indexOf("y=")));
+					int y_ = Integer.parseInt(cont.substring(
+							                        cont.indexOf("y=")+2),
+							                        cont.indexOf("radio="));
+					int radio = Integer.parseInt(cont.substring(
+							                        cont.indexOf("radio=")+6));
 					if (!agentes.containsKey(aidInformador)) {
 						agentes.put(aidInformador, new Point(x_, y_, radio));
 					} else {
-						System.out.println("ERROR:Agente: "+aidInformador.getName()+ " ya activo, no se puede dar de alta.");						
+						System.out.println("ERROR:Agente: " + 
+					                  aidInformador.getName() + 
+					                  " ya activo, no se puede dar de alta.");						
 					}
 				} else if (msg.getConversationId().equals("bajaSensor")) {
 					AID aidInformador = msg.getSender();
 					if (agentes.remove(aidInformador) == null) 
-						System.out.println("ERROR:Agente: "+aidInformador.getName()+ " ya existe, no se puede dar de baja.");;						
+						System.out.println("ERROR:Agente: " + 
+					                   aidInformador.getName() + 
+					                   " ya existe, no se puede dar de baja.");;						
 					}			
 			} else block();
 		}

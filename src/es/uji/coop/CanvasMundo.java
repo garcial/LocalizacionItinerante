@@ -82,7 +82,8 @@ public class CanvasMundo extends JFrame {
 		    repaint();		
 		}
 		
-		public void incluyeSensor(String agente, int x, int y, int radio, String tipo){
+		public void incluyeSensor(String agente, int x, int y, int radio, 
+				                  String tipo){
 			posicionesSensores.add(new Sensor(agente, x, y, radio, tipo));
 			repaint();
 		}
@@ -98,7 +99,8 @@ public class CanvasMundo extends JFrame {
 		    repaint();
 		}
 		
-		public void modGestorMovil(String agsensor, String codigo, String agenteInterfaz) {
+		public void modGestorMovil(String agsensor, String codigo, 
+				                   String agenteInterfaz) {
 //			for(Movil m: posicionesMoviles) 
 //				if (codigo.equals(m.getCodigo())) {
 //					m.setSensor(recuperaSensor(agsensor, agenteInterfaz));
@@ -135,8 +137,10 @@ public class CanvasMundo extends JFrame {
 			for (Sensor s : posicionesSensores) {
 				g.setColor(s.getColor());
 				// según sea el sensor dibuja un cuadrado, círculo o circunferencia
-				if (s.getTipo().equals("fijo")) g.fillRect(s.getX() -5, s.getY()-5, 10, 10);
-				else if (s.getTipo().equals("medio")) g.fillOval(s.getX(), s.getY(), 10, 10);
+				if (s.getTipo().equals("fijo")) 
+					g.fillRect(s.getX() -5, s.getY()-5, 10, 10);
+				else if (s.getTipo().equals("medio")) 
+					g.fillOval(s.getX(), s.getY(), 10, 10);
 				else g.drawOval(s.getX(), s.getY(), 10, 10);
 				g.drawString(s.getAgente(), s.getX()-5, s.getY()+15);
 				// Dibuja el circulo de influencia
