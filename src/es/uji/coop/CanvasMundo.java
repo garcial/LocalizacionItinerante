@@ -37,7 +37,7 @@ public class CanvasMundo extends JFrame {
 
 	}
 	
-	public void incluyeSensor(String agente, int x, int y, int radio, String tipo) {
+	public void incluyeSensor(String agente, int x, int y, double radio, String tipo) {
 		contentPane.incluyeSensor(agente, x, y, radio, tipo);
 	}
 	
@@ -82,7 +82,7 @@ public class CanvasMundo extends JFrame {
 		    repaint();		
 		}
 		
-		public void incluyeSensor(String agente, int x, int y, int radio, 
+		public void incluyeSensor(String agente, int x, int y, double radio, 
 				                  String tipo){
 			posicionesSensores.add(new Sensor(agente, x, y, radio, tipo));
 			repaint();
@@ -109,14 +109,14 @@ public class CanvasMundo extends JFrame {
 		    repaint();
 		}
 		
-		public Sensor recuperaSensor(String agsensor, String agenteInterfaz) {
+/*		public Sensor recuperaSensor(String agsensor, String agenteInterfaz) {
 			for (Sensor s : posicionesSensores) {
 				if (s.getAgente().equals(agsensor))
 					return s;
 			}
 			// Si has salido es porque le corresponde al agente Interfaz
 			return new Sensor(agenteInterfaz);
-		}
+		}*/
 		
 		public void paint(Graphics gi) {
 
@@ -124,14 +124,6 @@ public class CanvasMundo extends JFrame {
 
 			// Dibuja el fondo
 			g.drawImage(fondo, 0, 0, this);
-			// Dibuja el resto de objetos de la escena
-/*			for (Movil m : posicionesMoviles) {
-				g.setColor(m.getSensor().getColor());
-				// Dibuja un pez (mas o menos)
-				g.fillOval(m.getX()-5, m.getY()-5, 10, 10); 
-				g.fillArc(m.getX()-10, m.getY()-5, 10, 10, -140, -90);
-				g.drawString(m.getSensor().getAgente(), m.getX()-5, m.getY()+15);
-			}*/
 			Font fplain = g.getFont();
 			g.setFont(new Font("default", Font.BOLD, fplain.getSize()));
 			for (Sensor s : posicionesSensores) {
@@ -142,7 +134,7 @@ public class CanvasMundo extends JFrame {
 				else if (s.getTipo().equals("medio")) 
 					g.fillOval(s.getX(), s.getY(), 10, 10);
 				else g.drawOval(s.getX(), s.getY(), 10, 10);
-				g.drawString(s.getAgente(), s.getX()-5, s.getY()+15);
+				g.drawString(s.getAgente(), s.getX()-5, s.getY()+23);
 				// Dibuja el circulo de influencia
 				int r = (int) Math.round(s.getRadio());							
 				g.drawOval(s.getX()-r, s.getY()-r, r*2, r*2);   
@@ -197,7 +189,7 @@ public class CanvasMundo extends JFrame {
 			this.radio = radio;
 		}
 
-		public Sensor(String agente, int x, int y, int radio, String tipo) {
+		public Sensor(String agente, int x, int y, double radio, String tipo) {
 			super();
 			this.x = x;
 			this.y = y;
@@ -209,14 +201,14 @@ public class CanvasMundo extends JFrame {
 		}
 		
 		// Este solo se invoca una vez por AgInterfaz
-		public Sensor(String agente) {
+/*		public Sensor(String agente) {
 			super();
 			this.x = 1;
 			this.y = 1;
 			this.radio = (MAXMUNDOX > MAXMUNDOY)? MAXMUNDOX: MAXMUNDOY;
 			this.agente = agente;
 			this.color = Color.BLACK;
-		}
+		}*/
 	}
 
 }

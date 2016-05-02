@@ -64,6 +64,9 @@ public class AgActivo extends Agent {
 		DFAgentDescription dfd = null;
 		DFAgentDescription[] result = null;
 		ServiceDescription sd;
+		final MessageTemplate mtInterfaz = MessageTemplate.and(
+				MessageTemplate.MatchConversationId("alta"),
+				MessageTemplate.MatchPerformative(ACLMessage.INFORM)); 
 		
 		@Override
 		
@@ -95,7 +98,7 @@ public class AgActivo extends Agent {
 				paso++;
 				break;
 			case 3: // Espera respuesta del interfaz y no avanza hasta recibirla
-				msg = myAgent.blockingReceive();
+				msg = myAgent.blockingReceive(mtInterfaz);
 				String cont = msg.getContent();
 				// Recupera datos del contenido del mensaje
 				int x = Integer.parseInt(
@@ -106,6 +109,7 @@ public class AgActivo extends Agent {
 				double radio = Double.parseDouble(cont.substring(
 						                          cont.indexOf("radio=")+6));
 				posicion = new Point(x, y, radio);
+				paso++;
 				break;
 			case 4: // Busca el agente sensor
 				dfd = new DFAgentDescription();
@@ -127,7 +131,7 @@ public class AgActivo extends Agent {
 				agSensor = result[0];
 				// Y estÃ¡n identificados los agentes de la infraestructura. 
 				msg = new ACLMessage(ACLMessage.INFORM);
-				// Envía datos de este nuevo sensor al AgSensor
+				// Envï¿½a datos de este nuevo sensor al AgSensor
 				msg.addReceiver(agSensor.getName());
 				msg.setConversationId("nuevoSensor");
 				msg.setContent("x="+posicion.getX()+"y="+posicion.getY()
@@ -153,25 +157,26 @@ public class AgActivo extends Agent {
 	private class BAtenderPeticiones extends CyclicBehaviour {
 
 		private static final long serialVersionUID = 1L;
-		final MessageTemplate mt = 
-				MessageTemplate.MatchPerformative(ACLMessage.REQUEST); 
+		final MessageTemplate mtPet = MessageTemplate.and(
+				    MessageTemplate.MatchPerformative(ACLMessage.REQUEST),
+				    MessageTemplate.MatchConversationId("distancia")); 
 		@Override
 		public void action() {
 
-			ACLMessage msg = myAgent.receive(mt);
+			ACLMessage msg = myAgent.receive(mtPet);
 			if (msg!= null) {
 				String cont = msg.getContent();
 				// Recuperar datos del contenido del mensaje
 				int x_ = Integer.parseInt(
 						cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-				int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2));
+				int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2, 
+						                                 cont.indexOf("radio=")));
 				// Calcula distancia
 				double dist = Math.sqrt((posicion.getX()-x_)*(posicion.getX()-x_) + 
 						                (posicion.getY()-y_)*(posicion.getY()-y_));
 				ACLMessage msgResp = new ACLMessage(ACLMessage.INFORM);
 				msgResp.addReceiver(msg.getSender());
 				msgResp.setConversationId("distancia");
-				msgResp.setConversationId(msg.getConversationId());
 				msgResp.setContent("x="+x_+"y="+y_+"dist="+dist);
 				myAgent.send(msgResp);
 			} else block();
@@ -182,9 +187,10 @@ public class AgActivo extends Agent {
 	public class BPasoSimple extends Behaviour {
 
 		private static final long serialVersionUID = 1L;
-		final MessageTemplate mtRespDist = MessageTemplate.and(
-				MessageTemplate.MatchPerformative(ACLMessage.INFORM),
-				MessageTemplate.MatchConversationId("distancia"));
+		final MessageTemplate mtRespDist = 
+				MessageTemplate.and(
+				        MessageTemplate.MatchPerformative(ACLMessage.INFORM),
+				        MessageTemplate.MatchConversationId("distancia"));
 		final MessageTemplate mtRespVecinos = 
 				MessageTemplate.and(
 						MessageTemplate.MatchPerformative(ACLMessage.REQUEST), 
@@ -207,6 +213,14 @@ public class AgActivo extends Agent {
 						          "radio=" + posicion.getRadio());
 				msgPos.setConversationId("posicionSensor");
 				send(msgPos);
+				// Comunica tu posicion al agInterfaz
+				msgPos = new ACLMessage(ACLMessage.INFORM);
+				msgPos.addReceiver(agInterfaz.getName());
+				msgPos.setContent("x="+posicion.getX() + "y=" + posicion.getY() +
+						          "radio=" + posicion.getRadio());
+				msgPos.setConversationId("posicionSensor");
+				System.out.println("envia nueva posicion de "+myAgent.getLocalName());
+				send(msgPos);
 				// Obtiene agentes vecinos en tu radio dada tu posicion actual
 				ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
 				msgVecinos.addReceiver(agSensor.getName());
@@ -225,6 +239,7 @@ public class AgActivo extends Agent {
 					} catch (UnreadableException e) { e.printStackTrace(); }
 					if (vecinos != null) {
 					    ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+					    msg.setConversationId("distancia");
 					    for (AID aid : vecinos) {
 						    msg.addReceiver(aid);
 					    }
@@ -246,11 +261,11 @@ public class AgActivo extends Agent {
 									       cont.indexOf("y=")));
 					int y_ = Integer.parseInt(
 							cont.substring(cont.indexOf("y=")+2, 
-									       cont.indexOf("radio=")));
-					int radio_ = Integer.parseInt(
+									       cont.indexOf("dist=")));
+					int dist_ = Integer.parseInt(
 							             cont.substring(
-							            	cont.indexOf("radio=")+6));
-					puntos[totalRespuestas] = new Point(x_, y_, radio_);
+							               cont.indexOf("dist=")+5));
+					puntos[totalRespuestas] = new Point(x_, y_, dist_);
 					totalRespuestas++;
 					if (totalRespuestas == puntos.length) {
 						paso++;
@@ -270,9 +285,8 @@ public class AgActivo extends Agent {
 
 		private Point PreguntaVecinos(Point[] puntos) {
 			if (puntos == null) return null;
-			return new Point(puntos[0].getX(), 
-					         puntos[0].getY(), 
-					         puntos[0].getRadio());
+			// Por ahora no hace nada decente con esa informacion
+			return puntos[0];
 		}
 
 		@Override

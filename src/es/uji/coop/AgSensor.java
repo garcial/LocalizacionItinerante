@@ -20,8 +20,10 @@ public class AgSensor extends Agent {
 
 	private static final long serialVersionUID = 1L;
 	private ConcurrentHashMap<AID, Point> agentes;
-	private final MessageTemplate mtREQ = 
-			MessageTemplate.MatchPerformative(ACLMessage.REQUEST);  
+	private final MessageTemplate mtPetVecinos = 
+			MessageTemplate.and(
+			    MessageTemplate.MatchPerformative(ACLMessage.REQUEST),
+			    MessageTemplate.MatchConversationId("vecinos"));  
 	private final MessageTemplate mtINF = 
 			MessageTemplate.MatchPerformative(ACLMessage.INFORM);  
 	
@@ -46,17 +48,17 @@ public class AgSensor extends Agent {
 
 		@Override
 		public void action() {
-			ACLMessage msg = myAgent.receive(mtREQ);
+			ACLMessage msg = myAgent.receive(mtPetVecinos);
 			if (msg!= null) {
 				String cont = msg.getContent();
 				// Recuperar datos del contenido del mensaje
 				int x_ = Integer.parseInt(
 						cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-				int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2),
-						                                 cont.indexOf("radio="));
+				int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2,
+						                                 cont.indexOf("radio=")));
 				double radio = Double.parseDouble(cont.substring(
 						                          cont.indexOf("radio=")+6));
-				// Calcula vecinos
+				// Calcula vecinos entre todos los agentes activos
 				List<AID> vecinos = new ArrayList<AID>(); 
 				for(AID agente: agentes.keySet()){
 					Point p = agentes.get(agente);
@@ -66,6 +68,8 @@ public class AgSensor extends Agent {
 						vecinos.add(agente);
 					}
 				}
+				// Elimina al agente solicitante del resultado
+				vecinos.remove(msg.getSender());
 				AID[] vecinosResp = vecinos.toArray(new AID[0]);
 				// Contesta con los vecinos
 				ACLMessage msgResp = new ACLMessage(ACLMessage.INFORM);
@@ -93,8 +97,8 @@ public class AgSensor extends Agent {
 					int x_ = Integer.parseInt(cont.substring(
 							     cont.indexOf("x=")+2, cont.indexOf("y=")));
 					int y_ = Integer.parseInt(cont.substring(
-							                  cont.indexOf("y=")+2),
-							                  cont.indexOf("radio"));
+							                  cont.indexOf("y=")+2,
+							                  cont.indexOf("radio")));
 					double radio_ = Double.parseDouble(cont.substring(
 							                     cont.indexOf("radio=")+6));
 					if (agentes.containsKey(aidInformador)) {
@@ -111,9 +115,9 @@ public class AgSensor extends Agent {
 							cont.substring(cont.indexOf("x=")+2, 
 									       cont.indexOf("y=")));
 					int y_ = Integer.parseInt(cont.substring(
-							                        cont.indexOf("y=")+2),
-							                        cont.indexOf("radio="));
-					int radio = Integer.parseInt(cont.substring(
+							                        cont.indexOf("y=")+2,
+							                        cont.indexOf("radio=")));
+					double radio = Double.parseDouble(cont.substring(
 							                        cont.indexOf("radio=")+6));
 					if (!agentes.containsKey(aidInformador)) {
 						agentes.put(aidInformador, new Point(x_, y_, radio));

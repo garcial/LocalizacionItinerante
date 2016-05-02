@@ -2,7 +2,6 @@ package es.uji.coop;
 
 import java.util.Random;
 
-import javax.accessibility.AccessibleHyperlink;
 import javax.swing.SwingUtilities;
 
 import jade.core.Agent;
@@ -71,7 +70,7 @@ public class AgInterfaz extends Agent {
 			if (msg != null) {
 				// Generar datos de posicion del sensor y su radio
 				String tipo = msg.getContent();
-				int radio;
+				double radio;
 				int x, y;
 				if (tipo.equals("fijo")) radio = rnd.nextInt(25) + 175; 
 				else if (tipo.equals("medio")) radio = rnd.nextInt(25) + 125;
@@ -88,6 +87,7 @@ public class AgInterfaz extends Agent {
 					}
 				});
 				ACLMessage msgres = new ACLMessage(ACLMessage.INFORM);
+				msgres.setConversationId("alta");
 				msgres.addReceiver(msg.getSender());
 				msgres.setContent("x="+x+"y="+y+"radio="+radio);
 				myAgent.send(msgres);
@@ -124,7 +124,7 @@ public class AgInterfaz extends Agent {
 		private static final long serialVersionUID = 1L;
 		final MessageTemplate mtActualizaPos = MessageTemplate.and(
 				MessageTemplate.MatchPerformative(ACLMessage.INFORM), 
-				MessageTemplate.MatchConversationId("actualiza"));
+				MessageTemplate.MatchConversationId("posicionSensor"));
 
 		@Override
 		public void action() {
@@ -136,11 +136,12 @@ public class AgInterfaz extends Agent {
 						  cont.substring(cont.indexOf("x=")+2, 
 								         cont.indexOf("y=")));
 				final int y = Integer.parseInt(cont.substring(
-						                 cont.indexOf("y=")+2),
-						                 cont.indexOf("radio="));
+						                 cont.indexOf("y=")+2,
+						                 cont.indexOf("radio=")));
 				final double radio = Double.parseDouble(cont.substring(
 						                 cont.indexOf("radio=") + 6));
 				final String agente = msg.getSender().getLocalName();
+				System.out.println("recibida nueva posicion de "+agente);
 				SwingUtilities.invokeLater(new Runnable() {
 
 					@Override

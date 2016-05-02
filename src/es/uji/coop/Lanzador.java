@@ -5,7 +5,6 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -18,7 +17,6 @@ import javax.swing.JSlider;
 import jade.core.Profile;
 import jade.core.ProfileImpl;
 import jade.core.Runtime;
-import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.ContainerController;
 import jade.wrapper.StaleProxyException;
@@ -62,7 +60,7 @@ public class Lanzador {
 	 */
 	private static Runtime emptyPlatform(boolean RMA){
 
-		Runtime rt = Runtime.instance();
+		rt = Runtime.instance();
 
 		// 1) create a platform (main container+DF+AMS)
 		Profile pMain = new ProfileImpl(hostname, 8888, null);
@@ -110,7 +108,7 @@ public class Lanzador {
 		System.out.println("Launching agents..." + nFijos + " Fijos; " + nMedios + 
 				           " Medios; "+nSimples+" Sencillos.");
 		String agentName;
-		List<AgentController> agentList=new ArrayList();
+		List<AgentController> agentList = new ArrayList<AgentController>();
 		
 		// Primero los agentes de la infraestructura
 		
@@ -128,10 +126,10 @@ public class Lanzador {
 	    } catch (StaleProxyException e) { e.printStackTrace(); }
 	    
 		//Luego los agentes fijos
-
+		
+	    Object[] args = new Object[] {"fijo"};
 		for(int i = 1; i<= nFijos; i++) {
 			agentName="F"+i;		
-			Object[] args = new Object[] {"fijo"};
 		    try {
 			    AgentController	ag=mainContainer.createNewAgent(agentName, 
 			    		                                  AgActivo.class.getName(),
@@ -143,9 +141,9 @@ public class Lanzador {
 	
 		//Ahora los agentes medios
 
+		args = new Object[] {"medio"};
 		for(int i = 1; i<= nMedios; i++) {
 			agentName="M"+i;	
-			Object[] args = new Object[] {"medio"};
 		    try {
 			    AgentController	ag=mainContainer.createNewAgent(agentName,
 			    		                                  AgActivo.class.getName(),
@@ -157,9 +155,9 @@ public class Lanzador {
 		
 		//Por último los agentes simples
 
+		args = new Object[] {"simple"};
 		for(int i = 1; i<= nSimples; i++) {
 			agentName="S"+i;		
-			Object[] args = new Object[] {"simple"};
 		    try {
 			    AgentController	ag = mainContainer.createNewAgent(agentName, 
 			    		                                    AgActivo.class.getName(),
@@ -179,7 +177,6 @@ public class Lanzador {
 	private static void startAgents(List<AgentController> agentList){
 
 		System.out.println("Starting agents...");
-
 
 		for(final AgentController ac: agentList){
 			try {
