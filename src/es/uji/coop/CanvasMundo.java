@@ -50,19 +50,13 @@ public class CanvasMundo extends JFrame {
 		contentPane.mueveSensor(agente, x, y, radio);
 	}
 
-	// pra cambiar el agente sensor que gestiona un agente movil
-	public void modGestorMovil(String agsensor, String codigo) {
-	    contentPane.modGestorMovil(agsensor, codigo, agenteInterfaz);;
-	}
-	
-	
 	public class PanelRadar extends JPanel{
 
 		private static final long serialVersionUID = 1L;
 		private ArrayList<Sensor> posicionesSensores;
 		private Image fondo;
 		private ImageIcon imagenMar = 
-				new ImageIcon(getClass().getResource("mar.jpg"));
+				new ImageIcon(getClass().getResource("mar.png"));
 		
 		
 		public PanelRadar() {
@@ -83,14 +77,14 @@ public class CanvasMundo extends JFrame {
 		    repaint();		
 		}
 		
-		public void incluyeSensor(String agente, int x, int y, double radio, 
+		public synchronized void incluyeSensor(String agente, int x, int y, double radio, 
 				                  String tipo){
 			posicionesSensores.add(new Sensor(agente, x, y, radio, tipo));
 			repaint();
 		}
 		
 		// Comprobada ok
-		public void mueveSensor(String agente, int x, int y, double radio) {
+		public  synchronized void mueveSensor(String agente, int x, int y, double radio) {
 			for(Sensor s: posicionesSensores) 
 				if (agente.equals(s.getAgente())) {
 					s.setX(x);
@@ -100,25 +94,6 @@ public class CanvasMundo extends JFrame {
 				}
 		    repaint();
 		}
-		
-		public void modGestorMovil(String agsensor, String codigo, 
-				                   String agenteInterfaz) {
-//			for(Movil m: posicionesMoviles) 
-//				if (codigo.equals(m.getCodigo())) {
-//					m.setSensor(recuperaSensor(agsensor, agenteInterfaz));
-//					break;
-//				}
-		    repaint();
-		}
-		
-/*		public Sensor recuperaSensor(String agsensor, String agenteInterfaz) {
-			for (Sensor s : posicionesSensores) {
-				if (s.getAgente().equals(agsensor))
-					return s;
-			}
-			// Si has salido es porque le corresponde al agente Interfaz
-			return new Sensor(agenteInterfaz);
-		}*/
 		
 		public void paint(Graphics gi) {
 
@@ -201,16 +176,5 @@ public class CanvasMundo extends JFrame {
 			this.color = colores[pos%colores.length];
 			pos++;
 		}
-		
-		// Este solo se invoca una vez por AgInterfaz
-/*		public Sensor(String agente) {
-			super();
-			this.x = 1;
-			this.y = 1;
-			this.radio = (MAXMUNDOX > MAXMUNDOY)? MAXMUNDOX: MAXMUNDOY;
-			this.agente = agente;
-			this.color = Color.BLACK;
-		}*/
 	}
-
 }

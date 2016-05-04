@@ -1,6 +1,13 @@
 package es.uji.coop.mapa;
 
-public class Point {
+import java.io.Serializable;
+
+public class Point implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	public Point(int nuevaX, int nuevaY, double radio) {
 		x = nuevaX;
@@ -29,5 +36,14 @@ public class Point {
 	private int y;
 	private double radio;
 
+	@Override
+	public String toString(){
+		return " x= "+x+" y= "+y+" radio= "+radio;
+	}
+	
+	public static double CalcularDistancia(Point p1, Point p2){
+		return Math.sqrt((p1.getX()-p2.getX())*(p1.getX()-p2.getX()) + 
+				(p1.getY()-p2.getY())*(p1.getY()-p2.getY()));
+	}
 	
 }

@@ -1,9 +1,11 @@
 package es.uji.coop;
 
+import java.io.IOException;
 import java.util.Random;
 
 import javax.swing.SwingUtilities;
 
+import es.uji.coop.mapa.Point;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.domain.DFService;
@@ -12,12 +14,13 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 
 public class AgInterfaz extends Agent {
 	private static final long serialVersionUID = 1L;
 	private CanvasMundo canvas;
-	public static final int MAXMUNDOX = 810;
-	public static final int MAXMUNDOY = 610;
+	public static final int MAXMUNDOX = 1620;
+	public static final int MAXMUNDOY = 930;
 	public Random rnd;
 	
 	private MessageTemplate mtNuevoSensor = MessageTemplate.and(
@@ -73,8 +76,8 @@ public class AgInterfaz extends Agent {
 				double radio;
 				int x, y;
 				if (tipo.equals("fijo")) radio = rnd.nextInt(25) + 175; 
-				else if (tipo.equals("medio")) radio = rnd.nextInt(25) + 125;
-				else radio = rnd.nextInt(25) + 75;
+				else if (tipo.equals("medio")) radio = rnd.nextInt(10) + 100;
+				else radio = rnd.nextInt(5) + 75;
 				x = rnd.nextInt(MAXMUNDOX-200) + 100;
 				y = rnd.nextInt(MAXMUNDOY-200) + 100;
 				final String agente = msg.getSender().getLocalName();
@@ -89,7 +92,9 @@ public class AgInterfaz extends Agent {
 				ACLMessage msgres = new ACLMessage(ACLMessage.INFORM);
 				msgres.setConversationId("alta");
 				msgres.addReceiver(msg.getSender());
-				msgres.setContent("x="+x+"y="+y+"radio="+radio);
+				try {
+					msgres.setContentObject(new Point(x, y, radio));
+				} catch (IOException e) { e.printStackTrace(); }
 				myAgent.send(msgres);
 			} else block();
 		}
@@ -131,25 +136,20 @@ public class AgInterfaz extends Agent {
 			ACLMessage msg = myAgent.receive(mtActualizaPos);
 			if (msg!= null) {  // Se ha recibido un mensaje de movimiento del sensor 
 				               //    o del movil
-				String cont = msg.getContent();
-				final int x = Integer.parseInt(
-						  cont.substring(cont.indexOf("x=")+2, 
-								         cont.indexOf("y=")));
-				final int y = Integer.parseInt(cont.substring(
-						                 cont.indexOf("y=")+2,
-						                 cont.indexOf("radio=")));
-				final double radio = Double.parseDouble(cont.substring(
-						                 cont.indexOf("radio=") + 6));
-				final String agente = msg.getSender().getLocalName();
-				//System.out.println("recibida nueva posicion de "+agente);
-				SwingUtilities.invokeLater(new Runnable() {
+				try {
+					Point p = (Point) msg.getContentObject();
+					final String agente = msg.getSender().getLocalName();
+					//System.out.println("recibida nueva posicion de "+agente);
+					SwingUtilities.invokeLater(new Runnable() {
 
-					@Override
-					public void run() {
-						canvas.mueveSensor(agente, x, y, radio);	
-					}
-						
-				});
+						@Override
+						public void run() {
+							canvas.mueveSensor(agente, p.getX(), p.getY(), p.getRadio());	
+						}
+							
+					});
+				} catch (UnreadableException e) { e.printStackTrace(); }
+;
 
 			} else block();
 		}

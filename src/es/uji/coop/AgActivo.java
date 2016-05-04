@@ -1,5 +1,7 @@
 package es.uji.coop;
 
+import java.io.IOException;
+
 import es.uji.coop.mapa.Mapa;
 import es.uji.coop.mapa.Point;
 import jade.core.AID;
@@ -16,7 +18,7 @@ import jade.lang.acl.UnreadableException;
 
 public class AgActivo extends Agent {
 	private static final long serialVersionUID = 1L;
-	private Point posicion;
+	private Point posicion = null;
 
 	private Mapa mapa;
 	private String tipoAgente;
@@ -99,16 +101,9 @@ public class AgActivo extends Agent {
 				break;
 			case 3: // Espera respuesta del interfaz y no avanza hasta recibirla
 				msg = myAgent.blockingReceive(mtInterfaz);
-				String cont = msg.getContent();
-				// Recupera datos del contenido del mensaje
-				int x = Integer.parseInt(
-						cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-				int y = Integer.parseInt(
-						cont.substring(cont.indexOf("y=")+2, 
-								       cont.indexOf("radio=")));
-				double radio = Double.parseDouble(cont.substring(
-						                          cont.indexOf("radio=")+6));
-				posicion = new Point(x, y, radio);
+				try {
+					posicion = (Point) msg.getContentObject();
+				} catch (UnreadableException e1) { e1.printStackTrace(); }
 				paso++;
 				break;
 			case 4: // Busca el agente sensor
@@ -134,8 +129,9 @@ public class AgActivo extends Agent {
 				// Envia datos de este nuevo sensor al AgSensor
 				msg.addReceiver(agSensor.getName());
 				msg.setConversationId("nuevoSensor");
-				msg.setContent("x="+posicion.getX()+"y="+posicion.getY()
-				              +"radio="+posicion.getRadio());
+				try {
+					msg.setContentObject(posicion);
+				} catch (IOException e) { e.printStackTrace(); }
 				send(msg);
 				// Ahora ya toca comenzar a escucha las peticiones de ayuda y a 
 				//    desplazarme por el escenario.
@@ -165,19 +161,18 @@ public class AgActivo extends Agent {
 
 			ACLMessage msg = myAgent.receive(mtPet);
 			if (msg!= null) {
-				String cont = msg.getContent();
-				// Recuperar datos del contenido del mensaje
-				int x_ = Integer.parseInt(
-						cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-				int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2, 
-						                                 cont.indexOf("radio=")));
+				Point p = null;
+				try {
+					p = (Point) msg.getContentObject();
+				} catch (UnreadableException e1) { e1.printStackTrace(); }
 				// Calcula distancia
-				double dist = Math.sqrt((posicion.getX()-x_)*(posicion.getX()-x_) + 
-						                (posicion.getY()-y_)*(posicion.getY()-y_));
+				double dist = Point.CalcularDistancia(p, posicion);
 				ACLMessage msgResp = new ACLMessage(ACLMessage.INFORM);
 				msgResp.addReceiver(msg.getSender());
 				msgResp.setConversationId("distancia");
-				msgResp.setContent("x="+x_+"y="+y_+"dist="+dist);
+				try {
+					msgResp.setContentObject(new Point(p.getX(), p.getY(), dist));
+				} catch (IOException e) { e.printStackTrace(); }
 				myAgent.send(msgResp);
 			} else block();
 		}
@@ -206,27 +201,22 @@ public class AgActivo extends Agent {
 			case 0:
 				// Avanza un paso
 				mapa.Avanza(posicion);
-				// Comunica tu posicion al agSensor
+				// Comunica tu nueva posicion al agSensor y al agInterfaz
 				ACLMessage msgPos = new ACLMessage(ACLMessage.INFORM);
 				msgPos.addReceiver(agSensor.getName());
-				msgPos.setContent("x="+posicion.getX() + "y=" + posicion.getY() +
-						          "radio=" + posicion.getRadio());
-				msgPos.setConversationId("posicionSensor");
-				send(msgPos);
-				// Comunica tu posicion al agInterfaz
-				msgPos = new ACLMessage(ACLMessage.INFORM);
 				msgPos.addReceiver(agInterfaz.getName());
-				msgPos.setContent("x="+posicion.getX() + "y=" + posicion.getY() +
-						          "radio=" + posicion.getRadio());
+				try {
+					msgPos.setContentObject(posicion);
+				} catch (IOException e1) { e1.printStackTrace(); }
 				msgPos.setConversationId("posicionSensor");
 				send(msgPos);
 				// Obtiene agentes vecinos en tu radio dada tu posicion actual
 				ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
 				msgVecinos.addReceiver(agSensor.getName());
 				msgVecinos.setConversationId("vecinos");
-				msgVecinos.setContent("x=" + posicion.getX() + "y=" + 
-				                      posicion.getY() + "radio=" + 
-						              posicion.getRadio());
+				try {
+					msgVecinos.setContentObject(posicion);
+				} catch (IOException e1) { e1.printStackTrace(); }
 				send(msgVecinos);
 				paso++;
 				break;
@@ -242,9 +232,9 @@ public class AgActivo extends Agent {
 					    for (AID aid : vecinos) {
 						    msg.addReceiver(aid);
 					    }
-					    msg.setContent("x=" + posicion.getX() + "y=" + 
-					                   posicion.getY() + "radio=" + 
-					    		       posicion.getRadio());
+					    try {
+							msg.setContentObject(posicion);
+						} catch (IOException e) { e.printStackTrace(); }
 					    send(msg);
 					    puntos = new Point[vecinos.length];
 					    paso++; 
@@ -254,17 +244,9 @@ public class AgActivo extends Agent {
 			case 2: 
 				ACLMessage msg = myAgent.receive(mtRespDist);
 				if (msg != null) {
-					String cont = msg.getContent();
-					int x_ = Integer.parseInt(
-							cont.substring(cont.indexOf("x=")+2, 
-									       cont.indexOf("y=")));
-					int y_ = Integer.parseInt(
-							cont.substring(cont.indexOf("y=")+2, 
-									       cont.indexOf("dist=")));
-					double dist_ = Double.parseDouble(
-							             cont.substring(
-							               cont.indexOf("dist=")+5));
-					puntos[totalRespuestas] = new Point(x_, y_, dist_);
+					try {
+						puntos[totalRespuestas] = (Point) msg.getContentObject();
+					} catch (UnreadableException e) { e.printStackTrace(); }
 					totalRespuestas++;
 					if (totalRespuestas == puntos.length) {
 						paso++;
@@ -276,6 +258,8 @@ public class AgActivo extends Agent {
 				Point localizacionEstimada = PreguntaVecinos(puntos);
 				// Envia el mensaje con la localizacion estimada al 
 				//   agLog y agInterfaz
+				System.out.println("Localizacion estimada agente " 
+				+myAgent.getLocalName() + localizacionEstimada);
 				paso++;
 				break;
 			}

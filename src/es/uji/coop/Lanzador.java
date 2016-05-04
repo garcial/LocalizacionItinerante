@@ -26,9 +26,9 @@ import jade.wrapper.StaleProxyException;
  * 
  * @author luisamable
  *  Esta es la clase Lanzador que permite ejecutar la plataforma 
- *  Jade directamente desde código
- *  Se basa en el código ejemplo propuesto por Cedric Herpson 
- *  y que se puede encontrar en la siguiente dirección web:  
+ *  Jade directamente desde codigo
+ *  Se basa en el codigo ejemplo propuesto por Cedric Herpson 
+ *  y que se puede encontrar en la siguiente direccion web:  
  *  Notas (muy breves)
  *  http://herpsonc.eu/docs/README_HowToStartJadeFromSourceCode.pdf 
  *  Codigo fuente
@@ -64,7 +64,7 @@ public class Lanzador {
 
 		// 1) create a platform (main container+DF+AMS)
 		Profile pMain = new ProfileImpl(hostname, 8888, null);
-		System.out.println("Launching a main-container..."+pMain);
+		System.out.println("Launching a main-container..." + pMain);
 		//DF and AMS are included
 		mainContainer = rt.createMainContainer(pMain); 
 		// Si se ha seleccionado lanzar la ejecucion de RMA 
@@ -153,7 +153,7 @@ public class Lanzador {
 		    } catch (StaleProxyException e) { e.printStackTrace(); }
 		}
 		
-		//Por último los agentes simples
+		//Por ultimo los agentes simples
 
 		args = new Object[] {"simple"};
 		for(int i = 1; i<= nSimples; i++) {
@@ -197,13 +197,13 @@ public class Lanzador {
 		
 		public GuiInicial(){
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			setTitle("Parámetros de ejecución: Localizacion compartida");
-			setSize(1200, 400);
+			setTitle("Parametros de ejecucion: Localizacion compartida");
 			Container container = this.getContentPane();
 	        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-	        container.setBounds(10, 10, 400, 800);
+	        setBounds(10, 10, 400, 800);
+	        setContentPane(container);
 
-	        JLabel labelFijos = new JLabel("Número de sensores fijos");
+	        JLabel labelFijos = new JLabel("Numero de sensores fijos");
 	        labelFijos.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(labelFijos);
 			sliderFijos = new JSlider(JSlider.HORIZONTAL, 1, 20, 1);
@@ -214,7 +214,7 @@ public class Lanzador {
 	        sliderFijos.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(sliderFijos);
 
-	        JLabel labelMedios = new JLabel("Número de sensores medios");
+	        JLabel labelMedios = new JLabel("Numero de sensores medios");
 	        labelMedios.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(labelMedios);
 			sliderMedios = new JSlider(JSlider.HORIZONTAL, 1, 50, 3);
@@ -225,7 +225,7 @@ public class Lanzador {
 	        sliderMedios.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(sliderMedios);
 
-	        JLabel labelSimples = new JLabel("Número de sensores sencillos");
+	        JLabel labelSimples = new JLabel("Numero de sensores sencillos");
 	        labelSimples.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(labelSimples);
 			sliderSimples = new JSlider(JSlider.HORIZONTAL, 3, 200, 5);
@@ -236,11 +236,11 @@ public class Lanzador {
 			sliderSimples.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(sliderSimples);
 
-	        JCheckBox checkRMA = new JCheckBox("¿Activar RMA?");
+	        JCheckBox checkRMA = new JCheckBox("Activar RMA");
 	        checkRMA.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(checkRMA);
 	        
-			botonLanzar = new JButton("Lanzar ejecución");
+			botonLanzar = new JButton("Lanzar ejecucion");
 			botonLanzar.addActionListener(new ActionListener() {
 				
 				@Override

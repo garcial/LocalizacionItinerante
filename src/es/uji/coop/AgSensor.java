@@ -15,6 +15,7 @@ import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 
 public class AgSensor extends Agent {
 
@@ -50,26 +51,23 @@ public class AgSensor extends Agent {
 		public void action() {
 			ACLMessage msg = myAgent.receive(mtPetVecinos);
 			if (msg!= null) {
-				String cont = msg.getContent();
-				// Recuperar datos del contenido del mensaje
-				int x_ = Integer.parseInt(
-						cont.substring(cont.indexOf("x=")+2, cont.indexOf("y=")));
-				int y_ = Integer.parseInt(cont.substring(cont.indexOf("y=")+2,
-						                                 cont.indexOf("radio=")));
-				double radio = Double.parseDouble(cont.substring(
-						                          cont.indexOf("radio=")+6));
+				Point p1 = null;;
+				try {
+					p1 = (Point) msg.getContentObject();
+				} catch (UnreadableException e1) { e1.printStackTrace(); }
 				// Calcula vecinos entre todos los agentes activos
 				List<AID> vecinos = new ArrayList<AID>(); 
 				for(AID agente: agentes.keySet()){
-					Point p = agentes.get(agente);
-					double dist = Math.sqrt((p.getX()-x_)*(p.getX()-x_) + 
-			                                (p.getY()-y_)*(p.getY()-y_));
-					if (dist <= radio && dist <= p.getRadio()) {
+					Point p2 = agentes.get(agente);
+					double dist = Point.CalcularDistancia(p1, p2);
+					if (dist <= p1.getRadio() && dist <= p2.getRadio()) {
 						vecinos.add(agente);
 					}
 				}
 				// Elimina al agente solicitante del resultado
-				vecinos.remove(msg.getSender());
+				if (!vecinos.remove(msg.getSender())) 
+					System.out.println("ERROR eliminando al agente solicitante" + 
+				                       "de la lista de vecinos a devolver");;
 				AID[] vecinosResp = vecinos.toArray(new AID[0]);
 				// Contesta con los vecinos
 				ACLMessage msgResp = new ACLMessage(ACLMessage.INFORM);
@@ -92,35 +90,26 @@ public class AgSensor extends Agent {
 			ACLMessage msg = myAgent.receive(mtINF);
 			if (msg!= null) {
 				if (msg.getConversationId().equals("posicionSensor")) {
-					String cont = msg.getContent();
+					Point p = null;
+					try {
+						p = (Point) msg.getContentObject();
+					} catch (UnreadableException e) { e.printStackTrace(); }
 					AID aidInformador = msg.getSender();
-					int x_ = Integer.parseInt(cont.substring(
-							     cont.indexOf("x=")+2, cont.indexOf("y=")));
-					int y_ = Integer.parseInt(cont.substring(
-							                  cont.indexOf("y=")+2,
-							                  cont.indexOf("radio")));
-					double radio_ = Double.parseDouble(cont.substring(
-							                     cont.indexOf("radio=")+6));
 					if (agentes.containsKey(aidInformador)) {
-						agentes.put(aidInformador, new Point(x_, y_, radio_));
+						agentes.put(aidInformador, p);
 					} else {
 						System.out.println("ERROR:Agente: " + 
 					                    aidInformador.getName() + 
 					                    " desconocido para actualizar posicion.");
 					}
 				} else if (msg.getConversationId().equals("nuevoSensor")) {
-					String cont = msg.getContent();
+					Point p = null;
+					try {
+						p = (Point) msg.getContentObject();
+					} catch (UnreadableException e) { e.printStackTrace(); }
 					AID aidInformador = msg.getSender();
-					int x_ = Integer.parseInt(
-							cont.substring(cont.indexOf("x=")+2, 
-									       cont.indexOf("y=")));
-					int y_ = Integer.parseInt(cont.substring(
-							                        cont.indexOf("y=")+2,
-							                        cont.indexOf("radio=")));
-					double radio = Double.parseDouble(cont.substring(
-							                        cont.indexOf("radio=")+6));
 					if (!agentes.containsKey(aidInformador)) {
-						agentes.put(aidInformador, new Point(x_, y_, radio));
+						agentes.put(aidInformador, p);
 					} else {
 						System.out.println("ERROR:Agente: " + 
 					                  aidInformador.getName() + 

@@ -4,8 +4,8 @@ import java.util.Random;
 
 public class Mapa {
 	
-	public static final int MAXMUNDOX = 810;
-	public static final int MAXMUNDOY = 610;
+	public static final int MAXMUNDOX = 1620;
+	public static final int MAXMUNDOY = 930;
 	public Random rnd = new Random();;
 	private int sentidoX = rnd.nextBoolean()?1:-1,
 	            sentidoY = rnd.nextBoolean()?1:-1;
