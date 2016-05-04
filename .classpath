@@ -3,5 +3,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="lib" path="C:/Users/garcial/Google Drive UJI/Investigación/ITP Jose/ITP_man_areas/librerias/jade.jar"/>
+	<classpathentry kind="lib" path="C:/Users/garcial/Desktop/Material_diverso_docencia/WADE-3.4.0/wadeSuite/wade/lib/commons-codec-1.3.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

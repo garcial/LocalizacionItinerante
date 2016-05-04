@@ -43,6 +43,10 @@ public class AgSensor extends Agent {
 		addBehaviour(new BDevolverDetectados());
 	}
 	
+	public synchronized void IncorporaAgente(AID agente, Point posicion) {
+		agentes.put(agente, posicion);
+	}
+	
 	public class BDevolverDetectados extends CyclicBehaviour {
 
 		private static final long serialVersionUID = 1L;
@@ -57,17 +61,20 @@ public class AgSensor extends Agent {
 				} catch (UnreadableException e1) { e1.printStackTrace(); }
 				// Calcula vecinos entre todos los agentes activos
 				List<AID> vecinos = new ArrayList<AID>(); 
+				String agenteSolicitante = msg.getSender().getLocalName();
 				for(AID agente: agentes.keySet()){
 					Point p2 = agentes.get(agente);
 					double dist = Point.CalcularDistancia(p1, p2);
-					if (dist <= p1.getRadio() && dist <= p2.getRadio()) {
+					if (dist <= p1.getRadio() && dist <= p2.getRadio()
+							&& !agenteSolicitante.equals(agente.getLocalName())) {
 						vecinos.add(agente);
 					}
 				}
 				// Elimina al agente solicitante del resultado
-				if (!vecinos.remove(msg.getSender())) 
-					System.out.println("ERROR eliminando al agente solicitante" + 
-				                       "de la lista de vecinos a devolver");;
+//				if (!vecinos.remove(msg.getSender())) 
+//					System.out.println("ERROR eliminando al agente solicitante " + 
+//										msg.getSender().getLocalName() +
+//				                       " de la lista de vecinos a devolver");;
 				AID[] vecinosResp = vecinos.toArray(new AID[0]);
 				// Contesta con los vecinos
 				ACLMessage msgResp = new ACLMessage(ACLMessage.INFORM);

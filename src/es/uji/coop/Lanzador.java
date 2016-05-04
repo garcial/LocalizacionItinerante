@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JSlider;
 
 import jade.core.Profile;
@@ -198,9 +199,8 @@ public class Lanzador {
 		public GuiInicial(){
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setTitle("Parametros de ejecucion: Localizacion compartida");
-			Container container = this.getContentPane();
-	        container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-	        setBounds(10, 10, 400, 800);
+			JPanel container = new JPanel();
+	        //container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
 	        setContentPane(container);
 
 	        JLabel labelFijos = new JLabel("Numero de sensores fijos");
@@ -217,7 +217,7 @@ public class Lanzador {
 	        JLabel labelMedios = new JLabel("Numero de sensores medios");
 	        labelMedios.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(labelMedios);
-			sliderMedios = new JSlider(JSlider.HORIZONTAL, 1, 50, 3);
+			sliderMedios = new JSlider(JSlider.HORIZONTAL, 1, 50, 2);
 			sliderMedios.setMajorTickSpacing(10);
 			sliderMedios.setMinorTickSpacing(1);
 			sliderMedios.setPaintTicks(true);
@@ -228,7 +228,7 @@ public class Lanzador {
 	        JLabel labelSimples = new JLabel("Numero de sensores sencillos");
 	        labelSimples.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(labelSimples);
-			sliderSimples = new JSlider(JSlider.HORIZONTAL, 3, 200, 5);
+			sliderSimples = new JSlider(JSlider.HORIZONTAL, 1, 200, 2);
 			sliderSimples.setMajorTickSpacing(50);
 			sliderSimples.setMinorTickSpacing(1);
 			sliderSimples.setPaintTicks(true);
@@ -255,6 +255,8 @@ public class Lanzador {
 			});
 	        botonLanzar.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(botonLanzar);
+	        setSize(1200, 1400);
+	        setResizable(false);
 	        this.pack();
 			// Muestra el frame
 			this.setVisible(true);
