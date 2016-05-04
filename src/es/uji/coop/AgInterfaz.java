@@ -75,9 +75,9 @@ public class AgInterfaz extends Agent {
 				String tipo = msg.getContent();
 				double radio;
 				int x, y;
-				if (tipo.equals("fijo")) radio = rnd.nextInt(25) + 275; 
-				else if (tipo.equals("medio")) radio = rnd.nextInt(10) + 200;
-				else radio = rnd.nextInt(5) + 175;
+				if (tipo.equals("fijo")) radio = rnd.nextInt(25) + 175; 
+				else if (tipo.equals("medio")) radio = rnd.nextInt(10) + 75;
+				else radio = rnd.nextInt(5) + 25;
 				x = rnd.nextInt(MAXMUNDOX-200) + 100;
 				y = rnd.nextInt(MAXMUNDOY-200) + 100;
 				final String agente = msg.getSender().getLocalName();
@@ -122,7 +122,7 @@ public class AgInterfaz extends Agent {
 	
 	/*
 	 * Este comportamiento es el encargado de mostrar en el escenario la 
-	 *   nueva posici�n del sensor o del movil
+	 *   nueva posicion del sensor o del movil
 	 */
 	private class BEscuchaSensores extends CyclicBehaviour {
 

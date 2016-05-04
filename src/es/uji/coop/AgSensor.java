@@ -86,6 +86,7 @@ public class AgSensor extends Agent {
 				myAgent.send(msgResp);
 			} else block();
 		}
+
 	}
 
 	public class BActualizar extends CyclicBehaviour {

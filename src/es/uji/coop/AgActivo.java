@@ -8,7 +8,6 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
-import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -30,7 +29,7 @@ public class AgActivo extends Agent {
 	protected void setup() {
 		// Registra el servicio de sensor del tipo que sea:
 		//   fijo, medio, simple
-		Espera(40000);
+		//Espera(40000);
 		Object[] args = getArguments();
 		if (args.length == 0) takeDown();
 		tipoAgente = (String) args[0];
@@ -39,9 +38,9 @@ public class AgActivo extends Agent {
 		if (!(tipoAgente.equals("fijo") ||
 		      tipoAgente.equals("medio") ||
 		      tipoAgente.equals("simple"))) {
-//			System.out.println("Error instanciando el agente "+
-//		                       getLocalName() + "sensor que " +
-//					          "no es fijo, medio o simple");
+			System.out.println("Error instanciando el agente "+
+		                       getLocalName() + "sensor que " +
+					          "no es fijo, medio o simple");
 			takeDown();
 		}
 		DFAgentDescription dfd = new DFAgentDescription();
@@ -232,13 +231,13 @@ public class AgActivo extends Agent {
 				send(msgVecinos);
 				paso++;
 				break;
-			case 1: 
+			case 1:
 				ACLMessage msgResp = myAgent.receive(mtRespVecinos);
 				if (msgResp != null) {
 					try {
 						vecinos = (AID[]) msgResp.getContentObject();
 					} catch (UnreadableException e) { e.printStackTrace(); }
-					if (vecinos != null) {
+					if (vecinos.length!=0) {
 					    ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 					    msg.setConversationId("distancia");
 					    for (AID aid : vecinos) {
@@ -270,8 +269,6 @@ public class AgActivo extends Agent {
 				Point localizacionEstimada = PreguntaVecinos(puntos);
 				// Envia el mensaje con la localizacion estimada al 
 				//   agLog y agInterfaz
-//				System.out.println("Localizacion estimada agente " 
-//				+myAgent.getLocalName() + localizacionEstimada);
 				paso++;
 				break;
 			}

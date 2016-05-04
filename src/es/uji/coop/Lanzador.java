@@ -1,13 +1,11 @@
 package es.uji.coop;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -25,7 +23,7 @@ import jade.wrapper.StaleProxyException;
 
 /**
  * 
- * @author luisamable
+ * @author Luis Amable
  *  Esta es la clase Lanzador que permite ejecutar la plataforma 
  *  Jade directamente desde codigo
  *  Se basa en el codigo ejemplo propuesto por Cedric Herpson 
@@ -217,7 +215,7 @@ public class Lanzador {
 	        JLabel labelMedios = new JLabel("Numero de sensores medios");
 	        labelMedios.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(labelMedios);
-			sliderMedios = new JSlider(JSlider.HORIZONTAL, 1, 50, 2);
+			sliderMedios = new JSlider(JSlider.HORIZONTAL, 1, 50, 1);
 			sliderMedios.setMajorTickSpacing(10);
 			sliderMedios.setMinorTickSpacing(1);
 			sliderMedios.setPaintTicks(true);
@@ -228,7 +226,7 @@ public class Lanzador {
 	        JLabel labelSimples = new JLabel("Numero de sensores sencillos");
 	        labelSimples.setAlignmentX(Component.CENTER_ALIGNMENT);
 	        container.add(labelSimples);
-			sliderSimples = new JSlider(JSlider.HORIZONTAL, 1, 200, 2);
+			sliderSimples = new JSlider(JSlider.HORIZONTAL, 1, 200, 1);
 			sliderSimples.setMajorTickSpacing(50);
 			sliderSimples.setMinorTickSpacing(1);
 			sliderSimples.setPaintTicks(true);
