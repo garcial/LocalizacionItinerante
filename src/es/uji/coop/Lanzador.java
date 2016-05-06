@@ -6,12 +6,18 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JSlider;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import jade.core.Profile;
 import jade.core.ProfileImpl;
@@ -34,7 +40,7 @@ import jade.wrapper.StaleProxyException;
  *  http://herpsonc.eu/docs/ y seleccionar el fichero: 
  *  HowToStartJadeFromSourceCode
  */
-public class Lanzador {
+public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 
 	private static String hostname = "127.0.0.1"; 
 	private static List<AgentController> agentList;// agents's ref
@@ -43,9 +49,177 @@ public class Lanzador {
 	
 	public static void main(String[] args) {
 		// Crea el Gui para introducir los parametros de la ejecucion
-		new Lanzador().new GuiInicial();
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                new Lanzador();
+            }
+        });
 	}
+	
+	private static final long serialVersionUID = 1L;
+	
+	//private JPanel contentPane;
+	JSlider sliderFijos;
+	JSlider sliderMedios;
+	JSlider sliderSimples;
+	JLabel cantidadFijos;
+	JLabel cantidadMedios;
+	JLabel cantidadSimples;
+	JButton botonLanzar;
+	JFileChooser ficheroMapa;
+	boolean hayFicheroMapa;
+	String pathFicheroMapa;
+	JFileChooser ficheroSalida;
+	boolean hayFicheroSalida;
+	String pathFicheroSalida;
+    JRadioButton fichero;
+    JRadioButton aleatorio;
+    
+    public Lanzador(){
 
+    	hayFicheroMapa = hayFicheroSalida = false;
+    	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    	setTitle("Localizacion compartida");
+    	JPanel panel = new JPanel();
+    	panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+    	setContentPane(panel);
+
+    	// Primer bloque del GUI
+    	JPanel panel1 = new JPanel();
+    	panel1.setLayout(new BoxLayout(panel1, BoxLayout.X_AXIS));
+    	JLabel mapa = new JLabel("Mapa");
+    	panel1.add(mapa);
+    	JPanel panel1_b = new JPanel();
+    	panel1_b.setLayout(new BoxLayout(panel1_b, BoxLayout.Y_AXIS));
+    	fichero = new JRadioButton("Fichero", false);
+    	aleatorio = new JRadioButton("Aleatorio", true);
+    	fichero.addActionListener(this);
+    	aleatorio.addActionListener(this);
+    	ButtonGroup grupo = new ButtonGroup();
+    	grupo.add(fichero);
+    	grupo.add(aleatorio);
+    	panel1_b.add(fichero);
+    	panel1_b.add(aleatorio);
+
+    	panel1.add(panel1_b);
+    	panel.add(panel1);
+
+    	// Segundo bloque del GUI (Fijos, Medios, Simples)
+
+    	cantidadFijos = new JLabel("Número de Sensores Fijos: 0");
+    	cantidadFijos.setAlignmentX(Component.CENTER_ALIGNMENT);
+    	sliderFijos = new JSlider(JSlider.HORIZONTAL, 0, 20, 0);
+    	sliderFijos.addChangeListener(this);
+    	sliderFijos.setMajorTickSpacing(10);
+    	sliderFijos.setMinorTickSpacing(1);
+    	sliderFijos.setPaintTicks(true);
+    	sliderFijos.setPaintLabels(true);
+    	sliderFijos.setAlignmentX(Component.CENTER_ALIGNMENT);
+    	panel.add(cantidadFijos);
+    	panel.add(sliderFijos);
+
+    	cantidadMedios = new JLabel("Numero de Sensores Medios: 0");
+    	cantidadMedios.setAlignmentX(Component.CENTER_ALIGNMENT);
+    	sliderMedios = new JSlider(JSlider.HORIZONTAL, 0, 50, 0);
+    	sliderMedios.addChangeListener(this);
+    	sliderMedios.setMajorTickSpacing(10);
+    	sliderMedios.setMinorTickSpacing(1);
+    	sliderMedios.setPaintTicks(true);
+    	sliderMedios.setPaintLabels(true);
+    	sliderMedios.setAlignmentX(Component.CENTER_ALIGNMENT);
+    	panel.add(cantidadMedios);
+    	panel.add(sliderMedios);
+
+    	cantidadSimples = new JLabel("Numero de Sensores Simples: 0");
+    	cantidadSimples.setAlignmentX(Component.CENTER_ALIGNMENT);
+    	sliderSimples = new JSlider(JSlider.HORIZONTAL, 0, 200, 0);
+    	sliderSimples.addChangeListener(this);
+    	sliderSimples.setMajorTickSpacing(50);
+    	sliderSimples.setMinorTickSpacing(1);
+    	sliderSimples.setPaintTicks(true);
+    	sliderSimples.setPaintLabels(true);
+    	sliderSimples.setAlignmentX(Component.CENTER_ALIGNMENT);
+    	panel.add(cantidadSimples);
+    	panel.add(sliderSimples);
+
+    	JCheckBox checkRMA = new JCheckBox("Activar RMA");
+    	checkRMA.setAlignmentX(Component.CENTER_ALIGNMENT);
+    	panel.add(checkRMA);
+
+    	JCheckBox salidaFichero = new JCheckBox("Salida a fichero");
+    	salidaFichero.setAlignmentX(Component.CENTER_ALIGNMENT);
+        salidaFichero.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JCheckBox yo = (JCheckBox) e.getSource();
+				if (yo.isSelected()) {
+					hayFicheroSalida = true;
+					ficheroSalida = new JFileChooser();
+					int valor = ficheroSalida.showOpenDialog(yo);
+					if(valor == JFileChooser.APPROVE_OPTION)
+						pathFicheroSalida = ficheroSalida.getSelectedFile().getAbsolutePath();
+					else { 
+						yo.setSelected(false);
+					    hayFicheroSalida = false;
+					}					
+				}
+				
+			}
+		});
+    	panel.add(salidaFichero);
+
+    	botonLanzar = new JButton("Lanzar ejecucion");
+    	botonLanzar.addActionListener(new ActionListener() {
+
+    		@Override
+    		public void actionPerformed(ActionEvent e) {
+    			dispose();
+    			rt = emptyPlatform(checkRMA.isSelected());
+    			agentList = createAgents(sliderFijos.getValue(), 
+    					sliderMedios.getValue(), 
+    					sliderSimples.getValue());
+    			startAgents(agentList);
+    		}
+    	});
+    	botonLanzar.setAlignmentX(Component.CENTER_ALIGNMENT);
+    	panel.add(botonLanzar);
+    	setSize(300, 350);
+    	setResizable(false);
+    	// this.pack(); Esto elimina el efecto del tamaño impuesto por setSize(,)
+    	// Muestra el frame
+    	this.setVisible(true);    	
+    }
+
+	@Override
+    public void stateChanged(ChangeEvent e) {
+        JSlider source = (JSlider)e.getSource();
+        int cuantos = (int)source.getValue();
+        if (source.equals(sliderFijos)) 
+        	cantidadFijos.setText("Numero de Sensores Fijos: " + cuantos);
+        else if (source.equals(sliderMedios)) 
+        	cantidadMedios.setText("Numero de Sensores Medios: " + cuantos);
+        else cantidadSimples.setText("Numero de Sensores Simples: " + cuantos);
+    }
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		JRadioButton radio = (JRadioButton)e.getSource();
+		if (radio.isSelected()) {
+			if (radio.equals(fichero)) {
+				hayFicheroMapa = true;
+				ficheroMapa = new JFileChooser();
+				int valor = ficheroMapa.showOpenDialog(this);
+				if(valor == JFileChooser.APPROVE_OPTION)
+					pathFicheroMapa = ficheroMapa.getSelectedFile().getAbsolutePath();
+				else { 
+					aleatorio.setSelected(true);
+				    hayFicheroMapa = false;
+				}
+			} else if (radio.equals(aleatorio)) hayFicheroMapa = false;
+		}	
+	}
+	
 	/**********************************************
 	 * 
 	 * Methods used to create an empty platform
@@ -185,80 +359,4 @@ public class Lanzador {
 		System.out.println("Agents started...");
 	}
 
-	private class GuiInicial extends JFrame {
-		
-		private static final long serialVersionUID = 1L;
-		//private JPanel contentPane;
-		JSlider sliderFijos;
-		JSlider sliderMedios;
-		JSlider sliderSimples;
-		JButton botonLanzar;
-		
-		public GuiInicial(){
-			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			setTitle("Parametros de ejecucion: Localizacion compartida");
-			JPanel container = new JPanel();
-	        //container.setLayout(new BoxLayout(container, BoxLayout.Y_AXIS));
-	        setContentPane(container);
-
-	        JLabel labelFijos = new JLabel("Numero de sensores fijos");
-	        labelFijos.setAlignmentX(Component.CENTER_ALIGNMENT);
-	        container.add(labelFijos);
-			sliderFijos = new JSlider(JSlider.HORIZONTAL, 1, 20, 1);
-			sliderFijos.setMajorTickSpacing(10);
-			sliderFijos.setMinorTickSpacing(1);
-			sliderFijos.setPaintTicks(true);
-			sliderFijos.setPaintLabels(true);
-	        sliderFijos.setAlignmentX(Component.CENTER_ALIGNMENT);
-	        container.add(sliderFijos);
-
-	        JLabel labelMedios = new JLabel("Numero de sensores medios");
-	        labelMedios.setAlignmentX(Component.CENTER_ALIGNMENT);
-	        container.add(labelMedios);
-			sliderMedios = new JSlider(JSlider.HORIZONTAL, 1, 50, 1);
-			sliderMedios.setMajorTickSpacing(10);
-			sliderMedios.setMinorTickSpacing(1);
-			sliderMedios.setPaintTicks(true);
-			sliderMedios.setPaintLabels(true);
-	        sliderMedios.setAlignmentX(Component.CENTER_ALIGNMENT);
-	        container.add(sliderMedios);
-
-	        JLabel labelSimples = new JLabel("Numero de sensores sencillos");
-	        labelSimples.setAlignmentX(Component.CENTER_ALIGNMENT);
-	        container.add(labelSimples);
-			sliderSimples = new JSlider(JSlider.HORIZONTAL, 1, 200, 1);
-			sliderSimples.setMajorTickSpacing(50);
-			sliderSimples.setMinorTickSpacing(1);
-			sliderSimples.setPaintTicks(true);
-			sliderSimples.setPaintLabels(true);
-			sliderSimples.setAlignmentX(Component.CENTER_ALIGNMENT);
-	        container.add(sliderSimples);
-
-	        JCheckBox checkRMA = new JCheckBox("Activar RMA");
-	        checkRMA.setAlignmentX(Component.CENTER_ALIGNMENT);
-	        container.add(checkRMA);
-	        
-			botonLanzar = new JButton("Lanzar ejecucion");
-			botonLanzar.addActionListener(new ActionListener() {
-				
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					dispose();
-					rt = emptyPlatform(checkRMA.isSelected());
-					agentList = createAgents(sliderFijos.getValue(), 
-							                 sliderMedios.getValue(), 
-							                 sliderSimples.getValue());
-     				startAgents(agentList);
-				}
-			});
-	        botonLanzar.setAlignmentX(Component.CENTER_ALIGNMENT);
-	        container.add(botonLanzar);
-	        setSize(1200, 1400);
-	        setResizable(false);
-	        this.pack();
-			// Muestra el frame
-			this.setVisible(true);
-		}
-		
-	}
 }
