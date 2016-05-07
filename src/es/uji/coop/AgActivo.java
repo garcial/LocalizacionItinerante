@@ -8,6 +8,7 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
@@ -212,15 +213,6 @@ public class AgActivo extends Agent {
 			case 0:
 				// Avanza un paso
 				mapa.Avanza(posicion);
-				// Comunica tu nueva posicion al agSensor y al agInterfaz
-				ACLMessage msgPos = new ACLMessage(ACLMessage.INFORM);
-				msgPos.addReceiver(agSensor.getName());
-				msgPos.addReceiver(agInterfaz.getName());
-				try {
-					msgPos.setContentObject(posicion);
-				} catch (IOException e1) { e1.printStackTrace(); }
-				msgPos.setConversationId("posicionSensor");
-				send(msgPos);
 				// Obtiene agentes vecinos en tu radio dada tu posicion actual
 				ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
 				msgVecinos.addReceiver(agSensor.getName());
@@ -266,6 +258,18 @@ public class AgActivo extends Agent {
 				break;
 
 			case 3:
+				// Comunica tu nueva posicion al agSensor y al agInterfaz
+				ACLMessage msgPos = new ACLMessage(ACLMessage.INFORM);
+				msgPos.addReceiver(agSensor.getName());
+				msgPos.addReceiver(agInterfaz.getName());
+				try {
+					msgPos.setContentObject(posicion);
+				} catch (IOException e1) { e1.printStackTrace(); }
+				msgPos.setConversationId("posicionSensor");
+				if (vecinos.length != 0) msgPos.setInReplyTo("Ayudado");
+				else msgPos.setInReplyTo("No ayudado");
+				send(msgPos);
+				//
 				Point localizacionEstimada = PreguntaVecinos(puntos);
 				// Envia el mensaje con la localizacion estimada al 
 				//   agLog y agInterfaz
@@ -283,11 +287,23 @@ public class AgActivo extends Agent {
 		@Override
 		public boolean done() {
 			if (paso == 4) {
-				addBehaviour(new BPasoSimple());
+				addBehaviour(new BWake(myAgent, 50));
 				return true;				
 			}
 			return false;
 		}
+	}
+	
+	public class BWake extends WakerBehaviour {
 
+		public BWake(Agent a, long timeout) {
+			super(a, timeout);
+		}
+		
+		@Override
+		public void onWake(){
+			addBehaviour(new BPasoSimple());
+		}
+		
 	}
 }

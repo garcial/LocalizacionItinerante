@@ -144,7 +144,9 @@ public class AgInterfaz extends Agent {
 
 						@Override
 						public void run() {
-							canvas.mueveSensor(agente, p.getX(), p.getY(), p.getRadio());	
+							canvas.mueveSensor(agente, p.getX(), p.getY(), 
+									           p.getRadio(), 
+									           msg.getInReplyTo().equals("Ayudado"));	
 						}
 							
 					});

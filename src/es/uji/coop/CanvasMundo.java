@@ -46,8 +46,8 @@ public class CanvasMundo extends JFrame {
 		contentPane.bajaSensor(agente);		
 	}
 	
-	public void mueveSensor(String agente, int x, int y, double radio) {
-		contentPane.mueveSensor(agente, x, y, radio);
+	public void mueveSensor(String agente, int x, int y, double radio, boolean ayuda) {
+		contentPane.mueveSensor(agente, x, y, radio, ayuda);
 	}
 
 	public class PanelRadar extends JPanel{
@@ -57,6 +57,7 @@ public class CanvasMundo extends JFrame {
 		private Image fondo;
 		private ImageIcon imagenMar = 
 				new ImageIcon(getClass().getResource("mar.png"));
+		Boolean ayuda;
 		
 		
 		public PanelRadar() {
@@ -84,12 +85,14 @@ public class CanvasMundo extends JFrame {
 		}
 		
 		// Comprobada ok
-		public  synchronized void mueveSensor(String agente, int x, int y, double radio) {
+		public  synchronized void mueveSensor(String agente, int x, int y, double radio,
+				boolean ayuda) {
 			for(Sensor s: posicionesSensores) 
 				if (agente.equals(s.getAgente())) {
 					s.setX(x);
 					s.setY(y);
 					s.setRadio(radio);
+					s.ayuda = ayuda;
 					break;
 				}
 		    repaint();
@@ -113,6 +116,7 @@ public class CanvasMundo extends JFrame {
 				else g.drawOval(s.getX(), s.getY(), 10, 10);
 				g.drawString(s.getAgente(), s.getX()-5, s.getY()+23);
 				// Dibuja el circulo de influencia
+				if (s.ayuda) g.setColor(Color.RED);
 				int r = (int) Math.round(s.getRadio());							
 				g.drawOval(s.getX()-r, s.getY()-r, r*2, r*2);   
 			}
@@ -127,14 +131,15 @@ public class CanvasMundo extends JFrame {
 		double radio;
 		Color color;
 		String tipo;
+		boolean ayuda;
 		
 		public synchronized String getTipo() {
 			return tipo;
 		}
 
 		final static private Color[] colores = 
-			{Color.RED, Color.WHITE, Color.GREEN, Color.PINK, Color.CYAN, 
-			 Color.MAGENTA, Color.ORANGE, Color.YELLOW, Color.BLUE};
+			{Color.WHITE, Color.GREEN, Color.PINK, Color.CYAN, 
+			 Color.MAGENTA, Color.ORANGE, Color.YELLOW, Color.BLUE,};
 		static int pos = 0;
 		String agente;	
 		
