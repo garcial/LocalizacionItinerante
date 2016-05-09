@@ -1,8 +1,9 @@
-package caminante;
+package caminanteItinerante;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.util.Random;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -13,8 +14,9 @@ public class Caminante extends JFrame {
 	
 	PanelRadar contentPane;
 	Mapa mapa;
-	static Point p1, p2, p3, p4;
-	static int tc = 10;
+	static Movil[] moviles;
+	static int tc = 14;
+	static Random random = new Random();
 
 	public Caminante(Mapa mapa) {
 		super();
@@ -32,8 +34,9 @@ public class Caminante extends JFrame {
 
 	public static void main(String[] args) {
 
-		Mapa mapa = new Mapa("/Users/luisamable/Desktop/mapa.txt", tc);
+		Mapa mapa = new Mapa("mapa.txt", tc, random);
 		Caminante cam = new Caminante(mapa);
+		moviles = new Movil[5];
 /*		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
@@ -42,10 +45,9 @@ public class Caminante extends JFrame {
 			}			
 		});*/
 		System.out.println("A moverse");
-		p1 = mapa.PosicionInicial();
-		p2 = mapa.PosicionInicial();
-		p3 = mapa.PosicionInicial();
-		p4 = mapa.PosicionInicial();
+		for (int i = 0; i < moviles.length; i++) {
+			moviles[i] = new Movil(random, mapa);
+		}
 //		System.out.print("posicion inicial: " + p);
 		while(true){
 			try {
@@ -53,11 +55,10 @@ public class Caminante extends JFrame {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			cam.contentPane.muestra();
-			mapa.Avanza(p1);
-			mapa.Avanza(p2);
-			mapa.Avanza(p3);
-			mapa.Avanza(p4);
+			for (int i = 0; i < moviles.length; i++) {
+				cam.contentPane.muestra();
+				mapa.Avanza(moviles[i].p, moviles[i]);
+			}
 //			System.out.println("posicion siguiente: "+p);
 		}
 
@@ -80,25 +81,20 @@ public class Caminante extends JFrame {
 			repaint();			
 		}
 
+		@Override
+		public void paintComponent(Graphics gi) {
 
-		public void paint(Graphics gi) {
-
+			super.paintComponent(gi);
 			Graphics2D g = (Graphics2D) gi;
-			// Dibuja el fondo
-			//g.drawImage(fondo, 0, 0, this);
-			//Font fplain = g.getFont();
 			g.setColor(Color.LIGHT_GRAY);
-			//g.setFont(new Font("default", Font.BOLD, fplain.getSize()));
 			for(int i = 0; i<mapa.filas.length;i++)
 				for(int j = 0; j<mapa.filas[0].length();j++)
 					if (mapa.mapaEntero[i][j] == 1)
 						g.fillRect(j*tc, i*tc, tc, tc);
 			g.setColor(Color.BLUE);
-			g.fillOval(p1.getX(), p1.getY(), 5, 5);
-			g.fillOval(p2.getX(), p2.getY(), 5, 5);
-			g.fillOval(p3.getX(), p3.getY(), 5, 5);
-			g.fillOval(p4.getX(), p4.getY(), 5, 5);
-			//g.setFont(new Font("default", Font.PLAIN, fplain.getSize()));
+			for (int i = 0; i < moviles.length; i++) {
+				g.fillOval(moviles[i].p.getX(), moviles[i].p.getY(), tc/2, tc/2);
+			}
 		}
 	}
 }

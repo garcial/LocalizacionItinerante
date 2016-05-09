@@ -1,4 +1,4 @@
-package caminante;
+package caminanteItinerante;
 
 public class Point {
 	public Point(int x, int y) {
