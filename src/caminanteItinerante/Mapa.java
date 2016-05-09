@@ -46,14 +46,12 @@ public class Mapa {
 			i = random.nextInt(filas.length);
 			j = random.nextInt(filas[0].length());
 			if (mapaEntero[i][j] == 0) 
-				return new Point(j*tc+tc/2, i*tc+tc/2);
+				return new Point(j*tc+tc/2-1, i*tc+tc/2-1);
 		}
 	}
 	
-	// Flata asegurar que no nos salimos del rando de la matriz ni del mundo
 	public void Avanza(Point p, Movil m) {
-		int posXM = p.getX()/tc;  // Casilla actual del mapa
-		int posYM = p.getY()/tc;
+
 		Point nuevo = new Point(p.getX(), p.getY());
 
 		while (true) {			
@@ -61,75 +59,67 @@ public class Mapa {
 			switch (m.dir) {
 			case NORTE:
 				p.setY(p.getY() + 2);
+				p.setX(p.getX() + random.nextInt(3)-1);
 				break;
 			case NORESTE:
-				p.setX(p.getX() + random.nextInt(2) + 1);
-				p.setY(p.getY() - random.nextInt(2) + 1);
+				p.setX(p.getX() + random.nextInt(3) + 1);
+				p.setY(p.getY() - random.nextInt(3) + 1);
 				break;
 			case ESTE:
 				p.setX(p.getX() + 2);
+				p.setY(p.getY() + random.nextInt(3)-1);
 				break;
 			case SURESTE:
-				p.setX(p.getX() + random.nextInt(2) + 1);
-				p.setY(p.getY() + random.nextInt(2) + 1);
+				p.setX(p.getX() + random.nextInt(3) + 1);
+				p.setY(p.getY() + random.nextInt(3) + 1);
 				break;
 			case SUR:
 				p.setY(p.getY() - 2);
+				p.setX(p.getX() + random.nextInt(3)-1);
 				break;
 			case SUROESTE:
-				p.setX(p.getX() - random.nextInt(2) + 1);
-				p.setY(p.getY() + random.nextInt(2) + 1);
+				p.setX(p.getX() - random.nextInt(3) + 1);
+				p.setY(p.getY() + random.nextInt(3) + 1);
 				break;
 			case OESTE:
 				p.setX(p.getX() - 2);
+				p.setY(p.getY() + random.nextInt(3)-1);
 				break;
 			case NOROESTE:
-				p.setX(p.getX() - random.nextInt(2) + 1);
-				p.setY(p.getY() - random.nextInt(2) + 1);
+				p.setX(p.getX() - random.nextInt(3) + 1);
+				p.setY(p.getY() - random.nextInt(3) + 1);
 				break;
 			}
-			int nposXM = (p.getX() +
-					       ((m.dir == Direccion.NORESTE ||
-					         m.dir == Direccion.ESTE ||
-					         m.dir == Direccion.SURESTE)? tc/2:0))/tc;
-			int nposYM = (p.getY() +
-					       ((m.dir == Direccion.SUR ||
-	                 	     m.dir == Direccion.SURESTE ||
-	                 		 m.dir == Direccion.SUROESTE)? tc/2:0))/tc;
-			// Si estas dentro de los limites del escenario
-			if (nposXM >= 0 && nposXM < filas[0].length() &&
-				nposYM >= 0 && nposYM < filas.length) {
-				// Si has cambiado de casilla mira si es valida
-				if (nposXM != posXM || nposYM != posYM) {
-				   if (mapaEntero[nposYM][nposXM] == 0) {
-					   System.out.println("pos("+posXM+","+posYM+"(; npos("+nposXM+","+nposYM+")");
-					   System.out.println("Posicion debe ser 0: " +mapaEntero[nposYM][nposXM]);
-						return;
-				   }
-				   else { // Si hay un muro, vuelve al valor inicial y
-					      //    cambia de dirección
-						p.setX(nuevo.getX()); 
-						p.setY(nuevo.getY());
-						m.dir = Direccion.nextDireccion(m.dir);
-				   }
-				} else {
-					if (mapaEntero[nposYM][nposXM] == 0) {
-					   System.out.println("No me cambio de cuadrícula");
-					   System.out.println("pos("+posXM+","+posYM+"(; npos("+nposXM+","+nposYM+")");
-					   System.out.println("Posicion debe ser 0: " +mapaEntero[nposYM][nposXM]);
-					   return; // En otro caso la nueva posicion es OK.
-					} else {
-						p.setX(nuevo.getX()); 
-						p.setY(nuevo.getY());
-						m.dir = Direccion.nextDireccion(m.dir);
-					}
-				}
-			} else { // Nos hemos salido del escenario, busca otra nueva dirección
-				     //   desde la posición inicial
+			// Comprobar los puntos (xO,yO), (xO+tc/2, yO), 
+			//                      (xO, yO+tc/2) y (xO+tc/2, yO+tc/2)
+			int nXMSE = (p.getX() + tc/2) / tc;
+			int nYMSE = (p.getY() + tc/2) / tc;
+			int nXMO = p.getX() / tc;
+			int nYMO = p.getY() / tc;
+
+			// No salirse del escenario
+			if (nXMSE >= 0 && nXMSE < filas[0].length() &&
+					nXMO >= 0 && nXMO < filas[0].length() &&
+					nYMSE >= 0 && nYMSE < filas.length &&
+					nYMO >=0 && nYMO < filas.length) {
+				// Si toco algÃºn muro hay que calcular otro paso con otra
+				//   orientaciÃ³n
+				if (mapaEntero[nYMSE][nXMSE] == 1 ||
+						mapaEntero[nYMO][nXMO] == 1	||
+						mapaEntero[nYMO][nXMSE] == 1 ||
+						mapaEntero[nYMSE][nXMO] == 1) {
+					p.setX(nuevo.getX()); 
+					p.setY(nuevo.getY());
+					m.dir = Direccion.nextDireccion(m.dir);
+
+				} else return;	 // No invado ningÃºn muro, el paso es correcto.	
+			} else {
+				// Si me he salido del escenario hay que calcular otro
+				//   paso con otra orientaciÃ³n
 				p.setX(nuevo.getX()); 
 				p.setY(nuevo.getY());
 				m.dir = Direccion.nextDireccion(m.dir);
-			}		
+			}
 		}		
 	}
 	

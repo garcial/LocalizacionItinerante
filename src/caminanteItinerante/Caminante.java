@@ -36,7 +36,7 @@ public class Caminante extends JFrame {
 
 		Mapa mapa = new Mapa("mapa.txt", tc, random);
 		Caminante cam = new Caminante(mapa);
-		moviles = new Movil[5];
+		moviles = new Movil[20];
 /*		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
@@ -48,10 +48,9 @@ public class Caminante extends JFrame {
 		for (int i = 0; i < moviles.length; i++) {
 			moviles[i] = new Movil(random, mapa);
 		}
-//		System.out.print("posicion inicial: " + p);
 		while(true){
 			try {
-				Thread.sleep(40);
+				Thread.sleep(10);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -59,7 +58,6 @@ public class Caminante extends JFrame {
 				cam.contentPane.muestra();
 				mapa.Avanza(moviles[i].p, moviles[i]);
 			}
-//			System.out.println("posicion siguiente: "+p);
 		}
 
 	}
