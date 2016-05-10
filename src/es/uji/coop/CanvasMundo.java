@@ -4,6 +4,8 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -20,12 +22,16 @@ public class CanvasMundo extends JFrame {
 
 
 	private String agenteInterfaz;
-	public static int MAXMUNDOX, MAXMUNDOY;
+//	public static int MAXMUNDOX, MAXMUNDOY;
+//	private int tc;
+//	private int nFilas, nColumnas;
+//	private String[] filas;
+//	private int[][] mapaEntero;
 	
-	public CanvasMundo (String agenteInterfaz, int maxX, int maxY) {
+	public CanvasMundo (String agenteInterfaz, String pathFicheroMapa, 
+			            int MAXMUNDOX, int MAXMUNDOY) {
 		super();
-		MAXMUNDOX = maxX;
-		MAXMUNDOY = maxY;
+//		leerFichero(pathFicheroMapa);
 		this.agenteInterfaz = agenteInterfaz;
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -38,6 +44,38 @@ public class CanvasMundo extends JFrame {
 
 	}
 	
+//	private void leerFichero(String pathFicheroMapa) {
+//		try{
+//		      FileReader f = new FileReader(pathFicheroMapa);
+//		      BufferedReader b = new BufferedReader(f);
+//		      tc = Integer.parseInt(b.readLine());
+//		      nFilas = Integer.parseInt(b.readLine());
+//		      nColumnas = Integer.parseInt(b.readLine());
+//		      MAXMUNDOX = nColumnas * tc;
+//		      MAXMUNDOY = nFilas * tc;
+//		      filas = new String[nFilas];
+//		      b.close();
+//		      f = new FileReader(pathFicheroMapa);
+//		      b = new BufferedReader(f);
+//		      int i=0;
+//		      while(i<nFilas && (filas[i] = b.readLine())!=null) {
+//		         i++;
+//		      }
+//		      b.close();
+//			  mapaEntero = new int[nFilas][nColumnas];
+//			} catch (Exception e){
+//				System.out.println("problemas al leer el mapa del fuchero");
+//			}	
+//
+//			for (int i = 0; i < nFilas; i++) {
+//				for (int j = 0; j < nColumnas; j++) {
+//					mapaEntero[i][j] = (int) (filas[i].charAt(j)) - 48;
+//					System.out.print(mapaEntero[i][j]);
+//				}
+//				System.out.println();			
+//			}		
+//	}
+
 	public void incluyeSensor(String agente, int x, int y, double radio, String tipo) {
 		contentPane.incluyeSensor(agente, x, y, radio, tipo);
 	}

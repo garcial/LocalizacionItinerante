@@ -68,10 +68,10 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 	JButton botonLanzar;
 	JFileChooser ficheroMapa;
 	boolean hayFicheroMapa;
-	String pathFicheroMapa;
+	static String pathFicheroMapa;
 	JFileChooser ficheroSalida;
 	boolean hayFicheroSalida;
-	String pathFicheroSalida;
+	static String pathFicheroSalida;
     JRadioButton fichero;
     JRadioButton aleatorio;
     
@@ -178,7 +178,8 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
     			rt = emptyPlatform(checkRMA.isSelected());
     			agentList = createAgents(sliderFijos.getValue(), 
     					sliderMedios.getValue(), 
-    					sliderSimples.getValue());
+    					sliderSimples.getValue(), hayFicheroMapa,
+    					hayFicheroSalida);
     			startAgents(agentList);
     		}
     	});
@@ -277,7 +278,9 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 	 **********************************************/
 
 	private static List<AgentController> createAgents(
-			                               int nFijos, int nMedios, int nSimples) {
+			                               int nFijos, int nMedios, int nSimples, 
+			                               boolean hayFicheroMapa, 
+			                               boolean hayFicheroSalida) {
 		System.out.println("Launching agents..." + nFijos + " Fijos; " + nMedios + 
 				           " Medios; "+nSimples+" Sencillos.");
 		String agentName;
@@ -285,10 +288,12 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 		
 		// Primero los agentes de la infraestructura
 		
+		Object[] args = new Object[] {pathFicheroMapa};
 	    try {
+	    	if (!hayFicheroMapa) pathFicheroMapa = "mapa.txt";
 		    AgentController	ag=mainContainer.createNewAgent("Agente Escenario",
 		    		                                     AgInterfaz.class.getName(),
-		    		                                     null);
+		    		                                     args);
 		    agentList.add(ag);
 		    System.out.println("Agente Interfaz Escenario launched");
 		    ag=mainContainer.createNewAgent("Agente Sensor", 
@@ -300,7 +305,7 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 	    
 		//Luego los agentes fijos
 		
-	    Object[] args = new Object[] {"fijo"};
+	    args = new Object[] {"fijo"};
 		for(int i = 1; i<= nFijos; i++) {
 			agentName="F"+i;		
 		    try {
@@ -314,7 +319,7 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 	
 		//Ahora los agentes medios
 
-		args = new Object[] {"medio"};
+		args = new Object[] {"medio", pathFicheroMapa};
 		for(int i = 1; i<= nMedios; i++) {
 			agentName="M"+i;	
 		    try {
@@ -328,7 +333,7 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 		
 		//Por ultimo los agentes simples
 
-		args = new Object[] {"simple"};
+		args = new Object[] {"simple", pathFicheroMapa};
 		for(int i = 1; i<= nSimples; i++) {
 			agentName="S"+i;		
 		    try {

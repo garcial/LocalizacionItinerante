@@ -1,10 +1,14 @@
 package es.uji.coop;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Random;
 
 import javax.swing.SwingUtilities;
 
+import caminanteItinerante.Movil;
+import es.uji.coop.mapa.CaminarAleatorio;
 import es.uji.coop.mapa.Point;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -19,9 +23,16 @@ import jade.lang.acl.UnreadableException;
 public class AgInterfaz extends Agent {
 	private static final long serialVersionUID = 1L;
 	private CanvasMundo canvas;
-	public static final int MAXMUNDOX = 1620;
-	public static final int MAXMUNDOY = 930;
-	public Random rnd;
+	public static int MAXMUNDOX;
+	public static int MAXMUNDOY;
+	public Random random;
+	private String pathFicheroMapa;
+	private CaminarAleatorio cam;
+	private int nFilas;
+	private int nColumnas;
+	private String[] filas;
+	private int[][] mapaEntero;
+	private int tc;
 	
 	private MessageTemplate mtNuevoSensor = MessageTemplate.and(
 			MessageTemplate.MatchPerformative(ACLMessage.REQUEST),
@@ -31,6 +42,11 @@ public class AgInterfaz extends Agent {
 			MessageTemplate.MatchConversationId("baja"));
 	
 	protected void setup() {
+		// Lee el mapa recibido como parametro del agente
+		Object[] args = getArguments();
+		if (args.length == 0) takeDown();
+		pathFicheroMapa = (String) args[0];
+		leerFichero(pathFicheroMapa);
 		// Registra el servicio de interfaz
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
@@ -41,13 +57,13 @@ public class AgInterfaz extends Agent {
 		try {
 			DFService.register(this,  dfd);
 		} catch (FIPAException fe) { fe.printStackTrace(); }
-		rnd = new Random();
+		random = new Random();
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
 			public void run() {
 				canvas = new CanvasMundo(
-						getLocalName(), MAXMUNDOX, MAXMUNDOY);	
+						getLocalName(), pathFicheroMapa, MAXMUNDOX, MAXMUNDOY);	
 			}			
 		});
 		// Gestiona datos de nuevo sensor en el escenario.
@@ -58,6 +74,42 @@ public class AgInterfaz extends Agent {
 		addBehaviour(new BEscuchaSensores());
 	}
 	
+	/*
+	 * Leer fichero recibido como parámetro
+	 */
+	
+	private void leerFichero(String pathFicheroMapa) {
+		try{
+		      FileReader f = new FileReader(pathFicheroMapa);
+		      BufferedReader b = new BufferedReader(f);
+		      tc = Integer.parseInt(b.readLine());
+		      nFilas = Integer.parseInt(b.readLine());
+		      nColumnas = Integer.parseInt(b.readLine());
+		      MAXMUNDOX = nColumnas * tc;
+		      MAXMUNDOY = nFilas * tc;
+		      filas = new String[nFilas];
+		      b.close();
+		      f = new FileReader(pathFicheroMapa);
+		      b = new BufferedReader(f);
+		      int i=0;
+		      while(i<nFilas && (filas[i] = b.readLine())!=null) {
+		         i++;
+		      }
+		      b.close();
+			  mapaEntero = new int[nFilas][nColumnas];
+			} catch (Exception e){
+				System.out.println("problemas al leer el mapa del fuchero");
+				takeDown();
+			}	
+
+			for (int i = 0; i < nFilas; i++) {
+				for (int j = 0; j < nColumnas; j++) {
+					mapaEntero[i][j] = (int) (filas[i].charAt(j)) - 48;
+					System.out.print(mapaEntero[i][j]);
+				}
+				System.out.println();			
+			}		
+	}
 	/*
 	 * Un nuevo sensor le indica al Interfaz que le indique en 
 	 *   que coordenadas va a estar ubicado inicialmente y cual 
@@ -75,25 +127,26 @@ public class AgInterfaz extends Agent {
 				String tipo = msg.getContent();
 				double radio;
 				int x, y;
-				if (tipo.equals("fijo")) radio = rnd.nextInt(25) + 175; 
-				else if (tipo.equals("medio")) radio = rnd.nextInt(10) + 75;
-				else radio = rnd.nextInt(5) + 25;
-				x = rnd.nextInt(MAXMUNDOX-200) + 100;
-				y = rnd.nextInt(MAXMUNDOY-200) + 100;
+				if (tipo.equals("fijo")) radio = random.nextInt(25) + 175; 
+				else if (tipo.equals("medio")) radio = random.nextInt(10) + 75;
+				else radio = random.nextInt(5) + 25;
+				// Crea un nuevo objeto movil
+				cam = new CaminarAleatorio(mapaEntero, random, tc);
+				Point p = cam.PosicionInicial();
 				final String agente = msg.getSender().getLocalName();
 
 				SwingUtilities.invokeLater(new Runnable() {
 					
 					@Override
 					public void run() {
-						canvas.incluyeSensor(agente, x, y, radio, tipo);	
+						canvas.incluyeSensor(agente, p.getX(), p.getY(), radio, tipo);
 					}
 				});
 				ACLMessage msgres = new ACLMessage(ACLMessage.INFORM);
 				msgres.setConversationId("alta");
 				msgres.addReceiver(msg.getSender());
 				try {
-					msgres.setContentObject(new Point(x, y, radio));
+					msgres.setContentObject(new Point(p.getX(), p.getY(), radio));
 				} catch (IOException e) { e.printStackTrace(); }
 				myAgent.send(msgres);
 			} else block();

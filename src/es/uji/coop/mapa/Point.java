@@ -14,6 +14,12 @@ public class Point implements Serializable {
 		y = nuevaY;
 		this.radio = radio;
 	}
+	
+	public Point(int nuevaX, int nuevaY){
+		x = nuevaX;
+		y = nuevaY;
+	}
+	
 	public synchronized int getX() {
 		return x;
 	}
