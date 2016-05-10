@@ -132,7 +132,7 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 
     	cantidadSimples = new JLabel("Numero de Sensores Simples: 0");
     	cantidadSimples.setAlignmentX(Component.CENTER_ALIGNMENT);
-    	sliderSimples = new JSlider(JSlider.HORIZONTAL, 0, 2000, 0);
+    	sliderSimples = new JSlider(JSlider.HORIZONTAL, 0, 200, 0);
     	sliderSimples.addChangeListener(this);
     	sliderSimples.setMajorTickSpacing(50);
     	sliderSimples.setMinorTickSpacing(1);

@@ -7,7 +7,6 @@ import java.util.Random;
 
 import javax.swing.SwingUtilities;
 
-import caminanteItinerante.Movil;
 import es.uji.coop.mapa.CaminarAleatorio;
 import es.uji.coop.mapa.Point;
 import jade.core.Agent;
@@ -47,6 +46,8 @@ public class AgInterfaz extends Agent {
 		if (args.length == 0) takeDown();
 		pathFicheroMapa = (String) args[0];
 		leerFichero(pathFicheroMapa);
+		random = new Random();
+		cam = new CaminarAleatorio(mapaEntero, random, tc);
 		// Registra el servicio de interfaz
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
@@ -57,13 +58,12 @@ public class AgInterfaz extends Agent {
 		try {
 			DFService.register(this,  dfd);
 		} catch (FIPAException fe) { fe.printStackTrace(); }
-		random = new Random();
 		SwingUtilities.invokeLater(new Runnable() {
 
 			@Override
 			public void run() {
 				canvas = new CanvasMundo(
-						getLocalName(), pathFicheroMapa, MAXMUNDOX, MAXMUNDOY);	
+						getLocalName(), tc, MAXMUNDOX, MAXMUNDOY, mapaEntero);	
 			}			
 		});
 		// Gestiona datos de nuevo sensor en el escenario.
@@ -75,7 +75,7 @@ public class AgInterfaz extends Agent {
 	}
 	
 	/*
-	 * Leer fichero recibido como parámetro
+	 * Leer fichero recibido como parï¿½metro
 	 */
 	
 	private void leerFichero(String pathFicheroMapa) {
@@ -98,7 +98,7 @@ public class AgInterfaz extends Agent {
 		      b.close();
 			  mapaEntero = new int[nFilas][nColumnas];
 			} catch (Exception e){
-				System.out.println("problemas al leer el mapa del fuchero");
+				System.out.println("Problemas al leer el mapa del fichero");
 				takeDown();
 			}	
 
@@ -110,6 +110,7 @@ public class AgInterfaz extends Agent {
 				System.out.println();			
 			}		
 	}
+	
 	/*
 	 * Un nuevo sensor le indica al Interfaz que le indique en 
 	 *   que coordenadas va a estar ubicado inicialmente y cual 
@@ -126,12 +127,10 @@ public class AgInterfaz extends Agent {
 				// Generar datos de posicion del sensor y su radio
 				String tipo = msg.getContent();
 				double radio;
-				int x, y;
 				if (tipo.equals("fijo")) radio = random.nextInt(25) + 175; 
 				else if (tipo.equals("medio")) radio = random.nextInt(10) + 75;
 				else radio = random.nextInt(5) + 25;
 				// Crea un nuevo objeto movil
-				cam = new CaminarAleatorio(mapaEntero, random, tc);
 				Point p = cam.PosicionInicial();
 				final String agente = msg.getSender().getLocalName();
 

@@ -3,13 +3,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentSkipListMap;
-
-import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -19,21 +13,17 @@ public class CanvasMundo extends JFrame {
 	private static final long serialVersionUID = 1L;
 
 	private PanelRadar contentPane;
-
-
 	private String agenteInterfaz;
-//	public static int MAXMUNDOX, MAXMUNDOY;
-//	private int tc;
-//	private int nFilas, nColumnas;
-//	private String[] filas;
-//	private int[][] mapaEntero;
-	
-	public CanvasMundo (String agenteInterfaz, String pathFicheroMapa, 
-			            int MAXMUNDOX, int MAXMUNDOY) {
-		super();
-//		leerFichero(pathFicheroMapa);
-		this.agenteInterfaz = agenteInterfaz;
+	public int[][] mapaEntero;
+	int tc;
 
+	
+	public CanvasMundo (String agenteInterfaz, int tc,
+			            int MAXMUNDOX, int MAXMUNDOY, int[][] mapaEntero) {
+		super();
+		this.mapaEntero = mapaEntero;
+		this.tc = tc;
+		this.agenteInterfaz = agenteInterfaz;
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("Agente Interfaz: "+ this.agenteInterfaz);
 		setBounds(10, 10, MAXMUNDOX, MAXMUNDOY);
@@ -43,38 +33,7 @@ public class CanvasMundo extends JFrame {
 		setVisible(true);
 
 	}
-	
-//	private void leerFichero(String pathFicheroMapa) {
-//		try{
-//		      FileReader f = new FileReader(pathFicheroMapa);
-//		      BufferedReader b = new BufferedReader(f);
-//		      tc = Integer.parseInt(b.readLine());
-//		      nFilas = Integer.parseInt(b.readLine());
-//		      nColumnas = Integer.parseInt(b.readLine());
-//		      MAXMUNDOX = nColumnas * tc;
-//		      MAXMUNDOY = nFilas * tc;
-//		      filas = new String[nFilas];
-//		      b.close();
-//		      f = new FileReader(pathFicheroMapa);
-//		      b = new BufferedReader(f);
-//		      int i=0;
-//		      while(i<nFilas && (filas[i] = b.readLine())!=null) {
-//		         i++;
-//		      }
-//		      b.close();
-//			  mapaEntero = new int[nFilas][nColumnas];
-//			} catch (Exception e){
-//				System.out.println("problemas al leer el mapa del fuchero");
-//			}	
-//
-//			for (int i = 0; i < nFilas; i++) {
-//				for (int j = 0; j < nColumnas; j++) {
-//					mapaEntero[i][j] = (int) (filas[i].charAt(j)) - 48;
-//					System.out.print(mapaEntero[i][j]);
-//				}
-//				System.out.println();			
-//			}		
-//	}
+
 
 	public void incluyeSensor(String agente, int x, int y, double radio, String tipo) {
 		contentPane.incluyeSensor(agente, x, y, radio, tipo);
@@ -92,15 +51,11 @@ public class CanvasMundo extends JFrame {
 
 		private static final long serialVersionUID = 1L;
 		private ArrayList<Sensor> posicionesSensores;
-		private Image fondo;
-		private ImageIcon imagenMar = 
-				new ImageIcon(getClass().getResource("mar.png"));
 		Boolean ayuda;
 		
 		
 		public PanelRadar() {
 			posicionesSensores = new ArrayList<Sensor>();
-			fondo = imagenMar.getImage();
 
 			this.setBorder(new EmptyBorder(1, 1, 1, 1));
 			this.setDoubleBuffered(true);
@@ -136,23 +91,29 @@ public class CanvasMundo extends JFrame {
 		    repaint();
 		}
 		
-		public void paint(Graphics gi) {
+		public void paintComponent(Graphics gi) {
 
+			super.paintComponent(gi);
 			Graphics2D g = (Graphics2D) gi;
 
 			// Dibuja el fondo
-			g.drawImage(fondo, 0, 0, this);
+			g.setColor(Color.LIGHT_GRAY);
+			for(int i = 0; i<mapaEntero.length;i++)
+				for(int j = 0; j<mapaEntero[0].length;j++)
+					if (mapaEntero[i][j] == 1)
+						g.fillRect(j*tc, i*tc, tc, tc);
+		    
 			Font fplain = g.getFont();
 			g.setFont(new Font("default", Font.BOLD, fplain.getSize()));
 			for (Sensor s : posicionesSensores) {
 				g.setColor(s.getColor());
 				// según sea el sensor dibuja un cuadrado, círculo o circunferencia
 				if (s.getTipo().equals("fijo")) 
-					g.fillRect(s.getX() -5, s.getY()-5, 10, 10);
+					g.fillRect(s.getX(), s.getY(), tc/2, tc/2);
 				else if (s.getTipo().equals("medio")) 
-					g.fillOval(s.getX(), s.getY(), 10, 10);
-				else g.drawOval(s.getX(), s.getY(), 10, 10);
-				g.drawString(s.getAgente(), s.getX()-5, s.getY()+23);
+					g.fillOval(s.getX(), s.getY(), tc/2, tc/2);
+				else g.drawOval(s.getX(), s.getY(), tc/2, tc/2);
+				g.drawString(s.getAgente(), s.getX(), s.getY()+tc/2+5);
 				// Dibuja el circulo de influencia
 				if (s.ayuda) g.setColor(Color.RED);
 				int r = (int) Math.round(s.getRadio());							

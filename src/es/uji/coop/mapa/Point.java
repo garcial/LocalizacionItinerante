@@ -18,6 +18,7 @@ public class Point implements Serializable {
 	public Point(int nuevaX, int nuevaY){
 		x = nuevaX;
 		y = nuevaY;
+		radio = 0;
 	}
 	
 	public synchronized int getX() {

@@ -1,4 +1,4 @@
-package caminanteItinerante;
+package es.uji.coop.mapa;
 
 public class Movil {
 	public Point p;

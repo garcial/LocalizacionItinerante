@@ -1,8 +1,13 @@
 package es.uji.coop;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.Random;
 
+import es.uji.coop.mapa.CaminarAleatorio;
 import es.uji.coop.mapa.Mapa;
+import es.uji.coop.mapa.Movil;
 import es.uji.coop.mapa.Point;
 import jade.core.AID;
 import jade.core.Agent;
@@ -19,10 +24,17 @@ import jade.lang.acl.UnreadableException;
 
 public class AgActivo extends Agent {
 	private static final long serialVersionUID = 1L;
-	private Point posicion = null;
 
-	private Mapa mapa;
+	private int[][] mapaEntero;
+	private int nFilas;
+	private int nColumnas;
+	private int tc;
+	private int MAXMUNDOX;
+	private int MAXMUNDOY;
+	private CaminarAleatorio cam;
 	private String tipoAgente;
+	private Random random = new Random();
+	private Movil movil;
 	
 	private DFAgentDescription agInterfaz;
 	private DFAgentDescription agSensor;
@@ -44,6 +56,12 @@ public class AgActivo extends Agent {
 					          "no es fijo, medio o simple");
 			takeDown();
 		}
+		
+		if (!tipoAgente.equals("fijo")) {
+			leerFichero((String) args[1]);
+			cam = new CaminarAleatorio(mapaEntero, random, tc);
+		}
+
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
 		ServiceDescription sd = new ServiceDescription();
@@ -53,19 +71,50 @@ public class AgActivo extends Agent {
 		try {
 			DFService.register(this,  dfd);
 		} catch (FIPAException fe) { fe.printStackTrace(); }
-		// Para saber desplazarse por el mundo
-		mapa = new Mapa();
 		// Incorpora un comportamiento para realizar las conexiones  
 		//    e identificar a los agentes de la infraestructura: 
 		//    AgInterfaz, AgLog, AgSensor
 		addBehaviour(new BConexionInfraestructura());
 	}
 	
+	private void leerFichero(String pathFicheroMapa) {
+		String[] filas = null;
+		try{
+		      FileReader f = new FileReader(pathFicheroMapa);
+		      BufferedReader b = new BufferedReader(f);
+		      tc = Integer.parseInt(b.readLine());
+		      nFilas = Integer.parseInt(b.readLine());
+		      nColumnas = Integer.parseInt(b.readLine());
+		      MAXMUNDOX = nColumnas * tc;
+		      MAXMUNDOY = nFilas * tc;
+		      filas = new String[nFilas];
+		      b.close();
+		      f = new FileReader(pathFicheroMapa);
+		      b = new BufferedReader(f);
+		      int i=0;
+		      while(i<nFilas && (filas[i] = b.readLine())!=null) {
+		         i++;
+		      }
+		      b.close();
+			  mapaEntero = new int[nFilas][nColumnas];
+			} catch (Exception e){
+				System.out.println("Problemas al leer el mapa del fichero "+ this.getLocalName());
+				takeDown();
+			}	
+
+			for (int i = 0; i < nFilas; i++) {
+				for (int j = 0; j < nColumnas; j++) {
+					mapaEntero[i][j] = (int) (filas[i].charAt(j)) - 48;
+					System.out.print(mapaEntero[i][j]);
+				}
+				System.out.println();			
+			}		
+	}
+	
 	private void Espera(int i) {
 		try {
 			Thread.sleep(i);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -113,8 +162,9 @@ public class AgActivo extends Agent {
 				break;
 			case 3: // Espera respuesta del interfaz y no avanza hasta recibirla
 				msg = myAgent.blockingReceive(mtInterfaz);
+				movil = new Movil();
 				try {
-					posicion = (Point) msg.getContentObject();
+					movil.p = (Point) msg.getContentObject();
 				} catch (UnreadableException e1) { e1.printStackTrace(); }
 				paso++;
 				break;
@@ -142,7 +192,7 @@ public class AgActivo extends Agent {
 				msg.addReceiver(agSensor.getName());
 				msg.setConversationId("nuevoSensor");
 				try {
-					msg.setContentObject(posicion);
+					msg.setContentObject(movil.p);
 				} catch (IOException e) { e.printStackTrace(); }
 				send(msg);
 				// Ahora ya toca comenzar a escucha las peticiones de ayuda y a 
@@ -178,7 +228,7 @@ public class AgActivo extends Agent {
 					p = (Point) msg.getContentObject();
 				} catch (UnreadableException e1) { e1.printStackTrace(); }
 				// Calcula distancia
-				double dist = Point.CalcularDistancia(p, posicion);
+				double dist = Point.CalcularDistancia(p, movil.p);
 				ACLMessage msgResp = new ACLMessage(ACLMessage.INFORM);
 				msgResp.addReceiver(msg.getSender());
 				msgResp.setConversationId("distancia");
@@ -212,13 +262,13 @@ public class AgActivo extends Agent {
 			switch (paso) {
 			case 0:
 				// Avanza un paso
-				mapa.Avanza(posicion);
+				cam.Avanza(movil.p, movil);
 				// Obtiene agentes vecinos en tu radio dada tu posicion actual
 				ACLMessage msgVecinos = new ACLMessage(ACLMessage.REQUEST);
 				msgVecinos.addReceiver(agSensor.getName());
 				msgVecinos.setConversationId("vecinos");
 				try {
-					msgVecinos.setContentObject(posicion);
+					msgVecinos.setContentObject(movil.p);
 				} catch (IOException e1) { e1.printStackTrace(); }
 				send(msgVecinos);
 				paso++;
@@ -236,7 +286,7 @@ public class AgActivo extends Agent {
 						    msg.addReceiver(aid);
 					    }
 					    try {
-							msg.setContentObject(posicion);
+							msg.setContentObject(movil.p);
 						} catch (IOException e) { e.printStackTrace(); }
 					    send(msg);
 					    puntos = new Point[vecinos.length];
@@ -263,7 +313,7 @@ public class AgActivo extends Agent {
 				msgPos.addReceiver(agSensor.getName());
 				msgPos.addReceiver(agInterfaz.getName());
 				try {
-					msgPos.setContentObject(posicion);
+					msgPos.setContentObject(movil.p);
 				} catch (IOException e1) { e1.printStackTrace(); }
 				msgPos.setConversationId("posicionSensor");
 				if (vecinos.length != 0) msgPos.setInReplyTo("Ayudado");

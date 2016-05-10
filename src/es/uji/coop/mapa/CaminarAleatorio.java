@@ -2,8 +2,6 @@ package es.uji.coop.mapa;
 
 import java.util.Random;
 
-import caminanteItinerante.Direccion;
-import caminanteItinerante.Movil;
 import es.uji.coop.mapa.Point;
 
 public class CaminarAleatorio {
