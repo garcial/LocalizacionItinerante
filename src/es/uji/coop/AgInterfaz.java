@@ -88,9 +88,6 @@ public class AgInterfaz extends Agent {
 		      MAXMUNDOX = nColumnas * tc;
 		      MAXMUNDOY = nFilas * tc;
 		      filas = new String[nFilas];
-		      b.close();
-		      f = new FileReader(pathFicheroMapa);
-		      b = new BufferedReader(f);
 		      int i=0;
 		      while(i<nFilas && (filas[i] = b.readLine())!=null) {
 		         i++;
@@ -98,7 +95,7 @@ public class AgInterfaz extends Agent {
 		      b.close();
 			  mapaEntero = new int[nFilas][nColumnas];
 			} catch (Exception e){
-				System.out.println("Problemas al leer el mapa del fichero");
+				System.out.println("Problemas al leer el mapa del fichero "+pathFicheroMapa);
 				takeDown();
 			}	
 

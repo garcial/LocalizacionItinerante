@@ -80,35 +80,24 @@ public class AgActivo extends Agent {
 	private void leerFichero(String pathFicheroMapa) {
 		String[] filas = null;
 		try{
-		      FileReader f = new FileReader(pathFicheroMapa);
-		      BufferedReader b = new BufferedReader(f);
-		      tc = Integer.parseInt(b.readLine());
-		      nFilas = Integer.parseInt(b.readLine());
-		      nColumnas = Integer.parseInt(b.readLine());
-		      MAXMUNDOX = nColumnas * tc;
-		      MAXMUNDOY = nFilas * tc;
-		      filas = new String[nFilas];
-		      b.close();
-		      f = new FileReader(pathFicheroMapa);
-		      b = new BufferedReader(f);
-		      int i=0;
-		      while(i<nFilas && (filas[i] = b.readLine())!=null) {
-		         i++;
-		      }
-		      b.close();
-			  mapaEntero = new int[nFilas][nColumnas];
-			} catch (Exception e){
-				System.out.println("Problemas al leer el mapa del fichero "+ this.getLocalName());
-				takeDown();
-			}	
-
-			for (int i = 0; i < nFilas; i++) {
-				for (int j = 0; j < nColumnas; j++) {
-					mapaEntero[i][j] = (int) (filas[i].charAt(j)) - 48;
-					System.out.print(mapaEntero[i][j]);
-				}
-				System.out.println();			
-			}		
+			FileReader f = new FileReader(pathFicheroMapa);
+			BufferedReader b = new BufferedReader(f);
+			tc = Integer.parseInt(b.readLine());
+			nFilas = Integer.parseInt(b.readLine());
+			nColumnas = Integer.parseInt(b.readLine());
+			MAXMUNDOX = nColumnas * tc;
+			MAXMUNDOY = nFilas * tc;
+			filas = new String[nFilas];
+			int i=0;
+			while(i<nFilas && (filas[i] = b.readLine())!=null) {
+				i++;
+			}
+			b.close();
+			mapaEntero = new int[nFilas][nColumnas];
+		} catch (Exception e){
+			System.out.println("Problemas al leer el mapa del fichero "+ this.getLocalName());
+			takeDown();
+		}		
 	}
 	
 	private void Espera(int i) {

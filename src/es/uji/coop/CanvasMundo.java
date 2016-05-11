@@ -113,7 +113,7 @@ public class CanvasMundo extends JFrame {
 				else if (s.getTipo().equals("medio")) 
 					g.fillOval(s.getX(), s.getY(), tc/2, tc/2);
 				else g.drawOval(s.getX(), s.getY(), tc/2, tc/2);
-				g.drawString(s.getAgente(), s.getX(), s.getY()+tc/2+5);
+				g.drawString(s.getAgente(), s.getX()-tc/2, s.getY()+tc+5);
 				// Dibuja el circulo de influencia
 				if (s.ayuda) g.setColor(Color.RED);
 				int r = (int) Math.round(s.getRadio());							

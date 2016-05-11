@@ -208,12 +208,12 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 		JRadioButton radio = (JRadioButton)e.getSource();
 		if (radio.isSelected()) {
 			if (radio.equals(fichero)) {
-				hayFicheroMapa = true;
 				ficheroMapa = new JFileChooser();
 				int valor = ficheroMapa.showOpenDialog(this);
-				if(valor == JFileChooser.APPROVE_OPTION)
+				if(valor == JFileChooser.APPROVE_OPTION) {
+					hayFicheroMapa = true;
 					pathFicheroMapa = ficheroMapa.getSelectedFile().getAbsolutePath();
-				else { 
+				} else { 
 					aleatorio.setSelected(true);
 				    hayFicheroMapa = false;
 				}
@@ -286,6 +286,7 @@ public class Lanzador extends JFrame implements ChangeListener, ActionListener{
 		String agentName;
 		List<AgentController> agentList = new ArrayList<AgentController>();
 		
+		if (!hayFicheroMapa) pathFicheroMapa = "mapa.txt";
 		// Primero los agentes de la infraestructura
 		
 		Object[] args = new Object[] {pathFicheroMapa};
