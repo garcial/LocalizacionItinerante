@@ -5,7 +5,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Random;
 
-import es.uji.coop.mapa.CaminarAleatorio;
+import es.uji.coop.mapa.MapaFichero;
 import es.uji.coop.mapa.Mapa;
 import es.uji.coop.mapa.Movil;
 import es.uji.coop.mapa.Point;
@@ -25,13 +25,7 @@ import jade.lang.acl.UnreadableException;
 public class AgActivo extends Agent {
 	private static final long serialVersionUID = 1L;
 
-	private int[][] mapaEntero;
-	private int nFilas;
-	private int nColumnas;
-	private int tc;
-	private int MAXMUNDOX;
-	private int MAXMUNDOY;
-	private CaminarAleatorio cam;
+	private MapaFichero cam;
 	private String tipoAgente;
 	private Random random = new Random();
 	private Movil movil;
@@ -58,8 +52,7 @@ public class AgActivo extends Agent {
 		}
 		
 		if (!tipoAgente.equals("fijo")) {
-			leerFichero((String) args[1]);
-			cam = new CaminarAleatorio(mapaEntero, random, tc);
+			cam = new MapaFichero((String) args[1]);
 		}
 
 		DFAgentDescription dfd = new DFAgentDescription();
@@ -75,29 +68,6 @@ public class AgActivo extends Agent {
 		//    e identificar a los agentes de la infraestructura: 
 		//    AgInterfaz, AgLog, AgSensor
 		addBehaviour(new BConexionInfraestructura());
-	}
-	
-	private void leerFichero(String pathFicheroMapa) {
-		String[] filas = null;
-		try{
-			FileReader f = new FileReader(pathFicheroMapa);
-			BufferedReader b = new BufferedReader(f);
-			tc = Integer.parseInt(b.readLine());
-			nFilas = Integer.parseInt(b.readLine());
-			nColumnas = Integer.parseInt(b.readLine());
-			MAXMUNDOX = nColumnas * tc;
-			MAXMUNDOY = nFilas * tc;
-			filas = new String[nFilas];
-			int i=0;
-			while(i<nFilas && (filas[i] = b.readLine())!=null) {
-				i++;
-			}
-			b.close();
-			mapaEntero = new int[nFilas][nColumnas];
-		} catch (Exception e){
-			System.out.println("Problemas al leer el mapa del fichero "+ this.getLocalName());
-			takeDown();
-		}		
 	}
 	
 	private void Espera(int i) {

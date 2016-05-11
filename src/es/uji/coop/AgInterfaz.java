@@ -1,13 +1,8 @@
 package es.uji.coop;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.Random;
-
 import javax.swing.SwingUtilities;
-
-import es.uji.coop.mapa.CaminarAleatorio;
+import es.uji.coop.mapa.MapaFichero;
 import es.uji.coop.mapa.Point;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -22,16 +17,8 @@ import jade.lang.acl.UnreadableException;
 public class AgInterfaz extends Agent {
 	private static final long serialVersionUID = 1L;
 	private CanvasMundo canvas;
-	public static int MAXMUNDOX;
-	public static int MAXMUNDOY;
-	public Random random;
 	private String pathFicheroMapa;
-	private CaminarAleatorio cam;
-	private int nFilas;
-	private int nColumnas;
-	private String[] filas;
-	private int[][] mapaEntero;
-	private int tc;
+	private MapaFichero cam;
 	
 	private MessageTemplate mtNuevoSensor = MessageTemplate.and(
 			MessageTemplate.MatchPerformative(ACLMessage.REQUEST),
@@ -45,9 +32,7 @@ public class AgInterfaz extends Agent {
 		Object[] args = getArguments();
 		if (args.length == 0) takeDown();
 		pathFicheroMapa = (String) args[0];
-		leerFichero(pathFicheroMapa);
-		random = new Random();
-		cam = new CaminarAleatorio(mapaEntero, random, tc);
+		cam = new MapaFichero(pathFicheroMapa);
 		// Registra el servicio de interfaz
 		DFAgentDescription dfd = new DFAgentDescription();
 		dfd.setName(getAID());
@@ -63,7 +48,8 @@ public class AgInterfaz extends Agent {
 			@Override
 			public void run() {
 				canvas = new CanvasMundo(
-						getLocalName(), tc, MAXMUNDOX, MAXMUNDOY, mapaEntero);	
+						          getLocalName(), cam.getTc(), cam.getMAXMUNDOX(), 
+						          cam.getMAXMUNDOY(), cam.getMapaEntero());	
 			}			
 		});
 		// Gestiona datos de nuevo sensor en el escenario.
@@ -73,40 +59,7 @@ public class AgInterfaz extends Agent {
 		// Actualizar posiciones de los sensores en el escenario
 		addBehaviour(new BEscuchaSensores());
 	}
-	
-	/*
-	 * Leer fichero recibido como par�metro
-	 */
-	
-	private void leerFichero(String pathFicheroMapa) {
-		try{
-		      FileReader f = new FileReader(pathFicheroMapa);
-		      BufferedReader b = new BufferedReader(f);
-		      tc = Integer.parseInt(b.readLine());
-		      nFilas = Integer.parseInt(b.readLine());
-		      nColumnas = Integer.parseInt(b.readLine());
-		      MAXMUNDOX = nColumnas * tc;
-		      MAXMUNDOY = nFilas * tc;
-		      filas = new String[nFilas];
-		      int i=0;
-		      while(i<nFilas && (filas[i] = b.readLine())!=null) {
-		         i++;
-		      }
-		      b.close();
-			  mapaEntero = new int[nFilas][nColumnas];
-			} catch (Exception e){
-				System.out.println("Problemas al leer el mapa del fichero "+pathFicheroMapa);
-				takeDown();
-			}	
 
-			for (int i = 0; i < nFilas; i++) {
-				for (int j = 0; j < nColumnas; j++) {
-					mapaEntero[i][j] = (int) (filas[i].charAt(j)) - 48;
-					System.out.print(mapaEntero[i][j]);
-				}
-				System.out.println();			
-			}		
-	}
 	
 	/*
 	 * Un nuevo sensor le indica al Interfaz que le indique en 
@@ -124,9 +77,9 @@ public class AgInterfaz extends Agent {
 				// Generar datos de posicion del sensor y su radio
 				String tipo = msg.getContent();
 				double radio;
-				if (tipo.equals("fijo")) radio = random.nextInt(25) + 175; 
-				else if (tipo.equals("medio")) radio = random.nextInt(10) + 75;
-				else radio = random.nextInt(5) + 25;
+				if (tipo.equals("fijo")) radio = cam.getRandom().nextInt(25) + 175; 
+				else if (tipo.equals("medio")) radio = cam.getRandom().nextInt(10) + 75;
+				else radio = cam.getRandom().nextInt(5) + 25;
 				// Crea un nuevo objeto movil
 				Point p = cam.PosicionInicial();
 				final String agente = msg.getSender().getLocalName();
